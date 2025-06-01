@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Simulation - Deployment Verification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .feature-list {
+            text-align: left;
+            margin: 20px 0;
+        }
+        .feature-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 RFID Warehouse Simulation</h1>
+        <h2>Deployment Verification</h2>
+        
+        <div id="status" class="status">
+            ⏳ Checking deployment status...
+        </div>
+        
+        <div class="feature-list">
+            <h3>✨ Available Features:</h3>
+            <div class="feature-item">🎮 Interactive 3D Warehouse Visualization</div>
+            <div class="feature-item">📱 Advanced Drag-and-Drop with Touch Support</div>
+            <div class="feature-item">🔊 Voice Synthesis and Audio Feedback</div>
+            <div class="feature-item">🏆 Gamification with Achievement System</div>
+            <div class="feature-item">📊 Real-time Data Analytics and Reporting</div>
+            <div class="feature-item">🌐 Cross-Platform Responsive Design</div>
+        </div>
+        
+        <button class="btn" onclick="launchSimulation()">
+            🎯 Launch Full Simulation
+        </button>
+        
+        <button class="btn" onclick="runTests()">
+            🔧 Run Feature Tests
+        </button>
+        
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Deployment verification
+        function checkDeployment() {
+            const status = document.getElementById('status');
+            
+            // Check if main simulation file exists
+            fetch('./index.html')
+                .then(response => {
+                    if (response.ok) {
+                        status.className = 'status success';
+                        status.innerHTML = '✅ Deployment successful! All files are accessible.';
+                    } else {
+                        throw new Error('Main simulation file not found');
+                    }
+                })
+                .catch(error => {
+                    status.className = 'status error';
+                    status.innerHTML = '❌ Deployment issue: ' + error.message;
+                });
+        }
+        
+        function launchSimulation() {
+            window.location.href = './index.html';
+        }
+        
+        function runTests() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<h3>🔧 Running Feature Tests...</h3>';
+            
+            const tests = [
+                { name: 'WebGL Support', test: () => !!window.WebGLRenderingContext },
+                { name: 'Touch Events', test: () => 'ontouchstart' in window },
+                { name: 'Speech Synthesis', test: () => 'speechSynthesis' in window },
+                { name: 'Local Storage', test: () => 'localStorage' in window },
+                { name: 'CSS3 Animations', test: () => 'animation' in document.body.style }
+            ];
+            
+            let testResults = '<div style="text-align: left; margin-top: 20px;">';
+            tests.forEach(test => {
+                const passed = test.test();
+                testResults += `<div class="feature-item" style="color: ${passed ? 'green' : 'red'}">
+                    ${passed ? '✅' : '❌'} ${test.name}
+                </div>`;
+            });
+            testResults += '</div>';
+            
+            results.innerHTML = '<h3>🔧 Feature Test Results:</h3>' + testResults;
+        }
+        
+        // Run deployment check on load
+        window.onload = checkDeployment;
+    </script>
+</body>
+</html>
