@@ -1,0 +1,4635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Advanced RFID Warehouse Simulation - Next Generation</title>
+
+    <!-- Three.js for 3D effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Web Speech API for voice synthesis -->
+    <script>
+        // Initialize speech synthesis
+        window.speechSynthesis = window.speechSynthesis || null;
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            /* Professional Color Palette */
+            --primary-blue: #2563eb;
+            --primary-green: #059669;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            --bg-white: #ffffff;
+            --bg-gray-50: #f9fafb;
+            --bg-gray-100: #f3f4f6;
+            --bg-gray-200: #e5e7eb;
+            --border-gray: #d1d5db;
+            --border-light: #f3f4f6;
+
+            /* Professional Shadows */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+            /* Enhanced Theme Variables - More Subtle */
+            --accent-blue: #3b82f6;
+            --accent-green: #22c55e;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --glass-bg: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --surface-elevated: #ffffff;
+            --surface-base: #f8fafc;
+
+            /* Connection Colors - High Contrast */
+            --connection-power: #dc2626;
+            --connection-data: #2563eb;
+            --connection-rf: #059669;
+            --connection-ethernet: #7c3aed;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--surface-base) 0%, #ffffff 100%);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Subtle background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(37, 99, 235, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(5, 150, 105, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Professional glass effect */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        }
+
+        /* Professional Header */
+        .header {
+            background: var(--surface-elevated);
+            border-bottom: 1px solid var(--border-gray);
+            padding: 1.5rem 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header h1::before {
+            content: '📡';
+            font-size: 1.5rem;
+        }
+
+        .system-status {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success-color);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            animation: statusPulse 2s infinite;
+        }
+
+        .status-indicator.warning {
+            background: var(--warning-color);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+
+        .status-indicator.danger {
+            background: var(--danger-color);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Enhanced Main Layout */
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .top-section {
+            width: 100%;
+        }
+
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Professional Transmission Card */
+        .transmission-card {
+            background: var(--surface-elevated);
+            border: 2px solid var(--primary-blue);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .transmission-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-green), var(--primary-blue));
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .transmission-card .card-title {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .transmission-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Professional Warehouse Card */
+        .warehouse-card {
+            background: var(--surface-elevated);
+            border: 2px solid var(--accent-green);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .warehouse-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-green), var(--primary-blue), var(--accent-green));
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .warehouse-card .card-title {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .warehouse-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .warehouse-container {
+            display: grid;
+            grid-template-columns: 1fr 200px;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        /* Enhanced Warehouse Map */
+        .warehouse-map {
+            position: relative;
+            height: 600px;
+            background: radial-gradient(circle at center, #1e293b, #0f172a);
+            border: 3px solid #475569;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .signal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Warehouse Stats */
+        .warehouse-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #60a5fa;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #cbd5e1;
+        }
+
+        /* Enhanced Legend */
+        .warehouse-legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 1rem;
+            border: 1px solid #334155;
+        }
+
+        .legend-group h4 {
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .legend-dot.metal { background: var(--primary-blue); }
+        .legend-dot.non-metal { background: var(--success-color); }
+        .legend-dot.violation { background: var(--danger-color); animation: pulse 1s infinite; }
+
+        .signal-strength-bar {
+            display: flex;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-segment {
+            flex: 1;
+        }
+
+        .strength-segment.strong { background: var(--success-color); }
+        .strength-segment.medium { background: var(--warning-color); }
+        .strength-segment.weak { background: var(--danger-color); }
+
+        .strength-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-gray);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        /* Data Transmission Network */
+        .network-diagram {
+            position: relative;
+            height: 400px;
+            background: var(--bg-gray-50);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .network-node:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .node-cm4 {
+            background: var(--primary-blue);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-r420 {
+            background: var(--warning-color);
+            top: 30%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-antenna {
+            background: var(--success-color);
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .node-antenna-1 { top: 10%; left: 20%; }
+        .node-antenna-2 { top: 10%; right: 20%; }
+        .node-antenna-3 { bottom: 10%; left: 20%; }
+        .node-antenna-4 { bottom: 10%; right: 20%; }
+
+        .node-poe {
+            background: var(--text-secondary);
+            top: 70%;
+            left: 70%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-power {
+            background: var(--danger-color);
+            bottom: 20%;
+            right: 10%;
+        }
+
+        .node-ui {
+            background: var(--primary-green);
+            top: 20%;
+            right: 10%;
+        }
+
+        .data-flow-line {
+            position: absolute;
+            height: 3px;
+            background: var(--success-color);
+            opacity: 0;
+            animation: dataFlow 2s infinite;
+        }
+
+        .data-flow-line.write {
+            background: var(--warning-color);
+        }
+
+        @keyframes dataFlow {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(1); }
+        }
+
+        /* Tag Inventory Table */
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .inventory-table th {
+            background: var(--bg-gray-50);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .inventory-table td {
+            font-size: 0.875rem;
+        }
+
+        .rssi-indicator {
+            display: inline-block;
+            width: 60px;
+            height: 8px;
+            background: var(--bg-gray-100);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rssi-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .rssi-strong { background: var(--success-color); }
+        .rssi-medium { background: var(--warning-color); }
+        .rssi-weak { background: var(--danger-color); }
+
+        /* Warehouse Map */
+        .warehouse-map {
+            position: relative;
+            height: 500px;
+            background: var(--bg-gray-50);
+            border: 2px solid var(--border-gray);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .map-boundary {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            border: 3px dashed var(--warning-color);
+            border-radius: 0.5rem;
+        }
+
+        .map-tag {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .map-tag:hover {
+            transform: scale(1.5);
+        }
+
+        .map-tag.metal { background: var(--primary-blue); }
+        .map-tag.non-metal { background: var(--success-color); }
+        .map-tag.violation { background: var(--danger-color); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-gray);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--bg-gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .power-slider {
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .power-value {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: var(--success-color);
+            color: #166534;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: var(--danger-color);
+            color: #991b1b;
+        }
+
+        /* Node Details Modal */
+        .node-details {
+            position: absolute;
+            background: white;
+            border: 1px solid var(--border-gray);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .node-details.show {
+            display: block;
+        }
+
+        .node-details h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .node-details p {
+            margin: 0.25rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+
+            .warehouse-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .warehouse-stats {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .stat-item {
+                min-width: 120px;
+            }
+
+            .warehouse-legend {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .transmission-controls,
+            .warehouse-controls {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .system-status {
+                justify-content: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .network-node {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .node-antenna {
+                width: 35px;
+                height: 35px;
+                font-size: 0.875rem;
+            }
+
+            .warehouse-map {
+                height: 300px;
+            }
+
+            /* Materials section responsive */
+            .materials-section {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            .materials-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                margin-top: 1.5rem;
+            }
+
+            .material-card {
+                padding: 1.5rem;
+            }
+
+            .material-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.75rem;
+            }
+
+            .material-header {
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .material-info h4 {
+                font-size: 1.125rem;
+            }
+
+            .material-specs {
+                padding: 0.75rem;
+                font-size: 0.875rem;
+            }
+
+            .material-purpose {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            /* Connection legend responsive */
+            .flex.items-center.gap-4 {
+                flex-wrap: wrap;
+                gap: 0.5rem !important;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .materials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Enhanced Materials Section */
+        .materials-section {
+            background: linear-gradient(135deg, var(--bg-white) 0%, #f8fafc 100%);
+            border: 1px solid var(--border-gray);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .materials-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green), var(--warning-color));
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .material-card {
+            background: var(--bg-white);
+            border: 2px solid transparent;
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .material-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(37, 99, 235, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .material-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-blue);
+        }
+
+        .material-card:hover::before {
+            opacity: 1;
+        }
+
+        .material-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .material-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            flex-shrink: 0;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+        }
+
+        .material-icon::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 1rem;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .material-card:hover .material-icon::after {
+            opacity: 1;
+        }
+
+        .material-icon.processing {
+            background: linear-gradient(135deg, var(--primary-blue), #1e40af);
+        }
+        .material-icon.reader {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+        }
+        .material-icon.antenna {
+            background: linear-gradient(135deg, var(--success-color), #047857);
+        }
+        .material-icon.tag-metal {
+            background: linear-gradient(135deg, var(--primary-blue), #1e3a8a);
+        }
+        .material-icon.tag-nonmetal {
+            background: linear-gradient(135deg, var(--primary-green), #047857);
+        }
+        .material-icon.network {
+            background: linear-gradient(135deg, var(--text-secondary), #374151);
+        }
+        .material-icon.power {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        }
+
+        .material-info h4 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .material-model {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .material-qty {
+            background: linear-gradient(135deg, var(--primary-blue), #1e40af);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .material-qty::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .material-card:hover .material-qty::before {
+            left: 100%;
+        }
+
+        .material-specs {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            background: var(--bg-gray-50);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border-left: 4px solid var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .material-specs strong {
+            color: var(--primary-blue);
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .material-purpose {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 0.75rem;
+            border-left: 4px solid var(--primary-green);
+            font-style: italic;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .material-purpose::before {
+            content: '💡';
+            position: absolute;
+            top: 0.75rem;
+            right: 1rem;
+            font-size: 1.25rem;
+            opacity: 0.7;
+        }
+
+        /* Clear, High-Contrast Data Flow Lines */
+        .connection-line {
+            position: absolute;
+            z-index: 2;
+            pointer-events: none;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* RF Connections - Green */
+        .connection-line.rf {
+            height: 8px;
+            background: var(--connection-rf);
+            box-shadow:
+                0 0 8px rgba(5, 150, 105, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: rfPulseAdvanced 2s infinite;
+        }
+
+        .connection-line.rf::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -30px;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            animation: rfFlow 2s infinite;
+        }
+
+        /* Ethernet Connections - Purple */
+        .connection-line.ethernet {
+            height: 6px;
+            background: var(--connection-ethernet);
+            box-shadow:
+                0 0 6px rgba(124, 58, 237, 0.5),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .connection-line.ethernet::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%);
+        }
+
+        /* Power Connections - Red */
+        .connection-line.power {
+            height: 10px;
+            background: var(--connection-power);
+            box-shadow:
+                0 0 10px rgba(220, 38, 38, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: powerFlow 1.5s infinite;
+        }
+
+        /* Data Flow - Blue */
+        .connection-line.data {
+            height: 6px;
+            background: var(--connection-data);
+            animation: dataTransmitAdvanced 1.2s infinite;
+            box-shadow:
+                0 0 8px rgba(37, 99, 235, 0.6),
+                0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .connection-line.data::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -25px;
+            width: 25px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            animation: dataPacket 1.2s infinite;
+        }
+
+        /* Connection Labels */
+        .connection-label {
+            position: absolute;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-gray);
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            z-index: 3;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Enhanced Connection Legend */
+        .connection-legend {
+            background: var(--bg-gray-50);
+            border: 1px solid var(--border-gray);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .legend-title {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .legend-item:hover {
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 6px;
+            border-radius: 3px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .legend-line.rf-demo {
+            background: var(--connection-rf);
+            animation: rfPulseAdvanced 2s infinite;
+        }
+
+        .legend-line.ethernet-demo {
+            background: var(--connection-ethernet);
+        }
+
+        .legend-line.ethernet-demo::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%);
+        }
+
+        .legend-line.power-demo {
+            background: var(--connection-power);
+            height: 8px;
+            animation: powerFlow 1.5s infinite;
+        }
+
+        .legend-line.data-demo {
+            background: var(--connection-data);
+            animation: dataTransmitAdvanced 1.2s infinite;
+        }
+
+        .legend-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .legend-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .legend-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Data Particles */
+        .data-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #ffffff, var(--primary-green));
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--primary-green);
+            z-index: 2;
+            animation: particleMove 2s linear;
+        }
+
+        .data-particle.fast {
+            animation: particleMove 1s linear;
+            background: radial-gradient(circle, #ffffff, var(--warning-color));
+            box-shadow: 0 0 15px var(--warning-color);
+        }
+
+        /* Node Pulse Effects */
+        .network-node.active {
+            animation: nodePulse 1s ease-in-out;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.6);
+        }
+
+        .network-node.transmitting::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid var(--primary-green);
+            border-radius: 50%;
+            animation: signalRing 1.5s infinite;
+        }
+
+        /* Signal Waves from Antennas */
+        .signal-wave {
+            position: absolute;
+            border: 2px solid var(--success-color);
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: signalExpand 3s infinite;
+            pointer-events: none;
+        }
+
+        /* Professional, Subtle Animations */
+        @keyframes rfPulseAdvanced {
+            0% {
+                opacity: 0.8;
+                filter: brightness(1);
+            }
+            50% {
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+            100% {
+                opacity: 0.8;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes rfFlow {
+            0% { left: -30px; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        @keyframes powerFlow {
+            0% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.15);
+            }
+            100% {
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes dataTransmitAdvanced {
+            0% {
+                opacity: 0.8;
+                filter: brightness(1);
+            }
+            50% {
+                opacity: 1;
+                filter: brightness(1.2);
+            }
+            100% {
+                opacity: 0.8;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes dataPacket {
+            0% { left: -25px; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        @keyframes particleMove {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+            10% { opacity: 1; transform: scale(1); }
+            90% { opacity: 1; }
+            100% { transform: translate(var(--deltaX, 100px), var(--deltaY, 0)) scale(0.5); opacity: 0; }
+        }
+
+        @keyframes particleMoveFast {
+            0% { transform: translate(0, 0) scale(0.8); opacity: 0; }
+            15% { opacity: 1; transform: scale(1.2); }
+            85% { opacity: 1; }
+            100% { transform: translate(var(--deltaX, 100px), var(--deltaY, 0)) scale(0.8); opacity: 0; }
+        }
+
+        @keyframes nodePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes signalRing {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        @keyframes signalExpand {
+            0% { transform: scale(0.5); opacity: 0.8; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+
+        /* Scanning Effects */
+        .scanning-indicator {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background: var(--success-color);
+            border-radius: 50%;
+            animation: scanPulse 1s infinite;
+        }
+
+        @keyframes scanPulse {
+            0%, 100% { transform: scale(0.8); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* Loading Indicators */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-gray);
+            border-radius: 50%;
+            border-top-color: var(--primary-blue);
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Professional Innovation Panel */
+        .innovation-panel {
+            position: fixed;
+            top: 50%;
+            right: -350px;
+            transform: translateY(-50%);
+            width: 350px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-gray);
+            border-radius: 1rem 0 0 1rem;
+            box-shadow: var(--shadow-xl);
+            z-index: 1000;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .innovation-panel.open {
+            right: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-gray);
+            background: var(--bg-gray-50);
+            border-radius: 1rem 0 0 0;
+        }
+
+        .panel-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .panel-toggle {
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+            background: var(--accent-blue);
+        }
+
+        .panel-content {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .control-group select {
+            width: 100%;
+            background: var(--bg-white);
+            border: 1px solid var(--border-gray);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-mini {
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.625rem 1rem;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-mini:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            background: var(--accent-blue);
+        }
+
+        /* 3D Visualization */
+        .visualization-3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            display: none;
+        }
+
+        .visualization-3d.active {
+            display: block;
+        }
+
+        #threeCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .view-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-controls button {
+            background: var(--glass-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: var(--neon-blue);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Achievement System */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1500;
+            max-width: 300px;
+        }
+
+        .achievement-popup.show {
+            transform: translateX(0);
+        }
+
+        .achievement-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .achievement-text h4 {
+            margin: 0 0 0.25rem 0;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .achievement-text p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+        }
+
+        /* Tutorial Overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tutorial-overlay.active {
+            display: flex;
+        }
+
+        .tutorial-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--neon-blue);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+        }
+
+        .tutorial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .tutorial-header h3 {
+            margin: 0;
+            color: var(--neon-blue);
+            font-size: 1.5rem;
+        }
+
+        .tutorial-header button {
+            background: var(--danger-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            font-size: 1.25rem;
+        }
+
+        .tutorial-step h4 {
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .tutorial-step p {
+            color: var(--neon-blue);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .tutorial-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tutorial-navigation button {
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tutorial-navigation span {
+            color: var(--neon-green);
+            font-weight: 600;
+        }
+
+        /* Performance HUD */
+        .performance-hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .hud-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .hud-label {
+            display: block;
+            color: var(--neon-green);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .hud-value {
+            display: block;
+            color: var(--neon-blue);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Keyboard Shortcuts Indicator */
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            color: var(--neon-blue);
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .keyboard-shortcuts.show {
+            opacity: 1;
+        }
+
+        .keyboard-shortcuts h4 {
+            margin: 0 0 0.5rem 0;
+            color: var(--neon-green);
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .shortcut-key {
+            background: rgba(0, 212, 255, 0.2);
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* Drag and Drop Styles */
+        .draggable {
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .draggable:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .draggable.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            transform: rotate(5deg) scale(1.05);
+            z-index: 1000;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .draggable.drag-preview {
+            pointer-events: none;
+            position: fixed;
+            z-index: 1001;
+        }
+
+        /* Drop Zone Indicators */
+        .drop-zone {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(37, 99, 235, 0.1);
+            border: 2px dashed var(--primary-blue);
+            transform: scale(1.02);
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid transparent;
+            border-radius: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over::before {
+            border-color: var(--primary-blue);
+            animation: dropZonePulse 1s infinite;
+        }
+
+        @keyframes dropZonePulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Warehouse Tag Dragging */
+        .map-tag.draggable {
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+
+        .map-tag.draggable:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.6);
+        }
+
+        .map-tag.dragging {
+            cursor: grabbing;
+            transform: scale(1.5);
+            z-index: 100;
+            box-shadow: 0 0 30px rgba(37, 99, 235, 0.8);
+            animation: tagDragPulse 0.5s infinite;
+        }
+
+        @keyframes tagDragPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Snap Grid Overlay */
+        .snap-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            background-image:
+                linear-gradient(rgba(37, 99, 235, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(37, 99, 235, 0.3) 1px, transparent 1px);
+            background-size: 25px 25px;
+            transition: opacity 0.3s ease;
+        }
+
+        .snap-grid.active {
+            opacity: 1;
+        }
+
+        /* Draggable Indicator */
+        .draggable-indicator {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .draggable:hover .draggable-indicator {
+            opacity: 1;
+        }
+
+        /* Undo/Redo Controls */
+        .position-controls {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .position-controls.active {
+            opacity: 1;
+        }
+
+        .position-btn {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-gray);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .position-btn:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .position-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>🏭 UHF RFID Warehouse System Simulation</h1>
+            <div class="system-status">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>R420 Connected</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>4 Antennas Active</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span id="uptime">CM4 Uptime: 72h 15m</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Materials Section -->
+    <div class="materials-section" style="max-width: 1400px; margin: 2rem auto; padding: 1.5rem 2rem;">
+        <div class="card-header">
+            <h2 class="card-title">🔧 System Components & Materials</h2>
+        </div>
+        <div class="materials-grid">
+            <!-- Raspberry Pi CM4 -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon processing">🖥️</div>
+                    <div class="material-info">
+                        <h4>Raspberry Pi CM4</h4>
+                        <p class="material-model">Model: CM4104032</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 1</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • ARM Cortex-A72 quad-core 1.5GHz<br>
+                    • 4GB LPDDR4 RAM, 32GB eMMC<br>
+                    • WiFi 802.11ac, Bluetooth 5.0<br>
+                    • GPIO, USB 2.0, PCIe Gen 2<br>
+                    • Power: 5V/3A (15W max)
+                </div>
+                <div class="material-purpose">
+                    Central processing unit for RFID system control, data processing, and network communication
+                </div>
+            </div>
+
+            <!-- UHF RFID Reader Module -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon reader">📡</div>
+                    <div class="material-info">
+                        <h4>UHF RFID Reader Module</h4>
+                        <p class="material-model">Model: Module-R420</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 1</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • Frequency: 902-928 MHz (US)<br>
+                    • 4 antenna ports (TNC connectors)<br>
+                    • Max power: 30 dBm (1W) per port<br>
+                    • Read range: up to 50m<br>
+                    • PoE+ powered (25.5W)
+                </div>
+                <div class="material-purpose">
+                    UHF RFID reader module for tag interrogation, data collection, and antenna management
+                </div>
+            </div>
+
+            <!-- UHF RFID Antennas -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon antenna">📶</div>
+                    <div class="material-info">
+                        <h4>UHF RFID Antenna</h4>
+                        <p class="material-model">Model: Module-ANT8</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 4</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • Frequency: 902-928 MHz<br>
+                    • Gain: 8 dBi circular polarized<br>
+                    • Beamwidth: 70° (3dB)<br>
+                    • Connector: TNC female<br>
+                    • IP67 rated, outdoor capable
+                </div>
+                <div class="material-purpose">
+                    High-gain antennas for extended read range and reliable tag detection in warehouse environment
+                </div>
+            </div>
+
+            <!-- Metal Surface RFID Tags -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon tag-metal">🏷️</div>
+                    <div class="material-info">
+                        <h4>Metal Surface RFID Tags</h4>
+                        <p class="material-model">Model: Module-TAG-M</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 20</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • Frequency: 860-960 MHz<br>
+                    • Read range: up to 4m on metal<br>
+                    • Size: 12 × 12 × 2.2mm<br>
+                    • Memory: 96-bit EPC, 512-bit user<br>
+                    • Temperature: -40°C to +85°C
+                </div>
+                <div class="material-purpose">
+                    Specialized tags for metal equipment tracking - drills, welders, machinery, tools
+                </div>
+            </div>
+
+            <!-- General Purpose RFID Tags -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon tag-nonmetal">🏷️</div>
+                    <div class="material-info">
+                        <h4>General Purpose RFID Tags</h4>
+                        <p class="material-model">Model: Module-TAG-G</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 10</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • Frequency: 860-960 MHz<br>
+                    • Read range: up to 8m (free space)<br>
+                    • Size: 97 × 27mm<br>
+                    • Memory: 128-bit EPC, 512-bit user<br>
+                    • Adhesive backing
+                </div>
+                <div class="material-purpose">
+                    General-purpose tags for non-metal items - pallets, containers, boxes, shelving
+                </div>
+            </div>
+
+            <!-- PoE Network Switch -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon network">🔌</div>
+                    <div class="material-info">
+                        <h4>PoE Network Switch</h4>
+                        <p class="material-model">Model: Module-SW8P</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 1</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • 8 Gigabit Ethernet ports<br>
+                    • PoE+ budget: 120W total<br>
+                    • 30W per port (4 ports)<br>
+                    • Fanless design<br>
+                    • Auto-sensing PoE
+                </div>
+                <div class="material-purpose">
+                    Network switch providing power and data connectivity to RFID reader and other PoE devices
+                </div>
+            </div>
+
+            <!-- DC Power Supply -->
+            <div class="material-card">
+                <div class="material-header">
+                    <div class="material-icon power">⚡</div>
+                    <div class="material-info">
+                        <h4>DC Power Supply</h4>
+                        <p class="material-model">Model: Module-PSU5V</p>
+                    </div>
+                </div>
+                <div class="material-qty">Quantity: 1</div>
+                <div class="material-specs">
+                    <strong>Specifications:</strong><br>
+                    • Output: 5V/3A (15W)<br>
+                    • Input: 100-240V AC<br>
+                    • Efficiency: >80%<br>
+                    • USB-C connector<br>
+                    • Compact design
+                </div>
+                <div class="material-purpose">
+                    External power adapter for PoE switch and system components requiring DC power
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Innovative Control Panel -->
+    <div class="innovation-panel holographic" id="innovationPanel">
+        <div class="panel-header">
+            <h3>🚀 Advanced Controls</h3>
+            <button class="panel-toggle" onclick="toggleInnovationPanel()">⚡</button>
+        </div>
+        <div class="panel-content">
+            <div class="control-group">
+                <label>🎨 Theme</label>
+                <select id="themeSelector" onchange="changeTheme(this.value)">
+                    <option value="futuristic">🌌 Futuristic</option>
+                    <option value="cyberpunk">🔮 Cyberpunk</option>
+                    <option value="matrix">💚 Matrix</option>
+                    <option value="classic">📊 Classic</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🎮 Scenario</label>
+                <select id="scenarioSelector" onchange="changeScenario(this.value)">
+                    <option value="normal">📦 Normal Operations</option>
+                    <option value="emergency">🚨 Emergency Evacuation</option>
+                    <option value="audit">📋 Inventory Audit</option>
+                    <option value="security">🔒 Security Breach</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>🎯 View Mode</label>
+                <div class="button-group">
+                    <button class="btn-mini" onclick="toggle3DView()">🎲 3D View</button>
+                    <button class="btn-mini" onclick="toggleARMode()">🥽 AR Mode</button>
+                    <button class="btn-mini" onclick="startTutorial()">🎓 Tutorial</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>🎵 Audio</label>
+                <div class="button-group">
+                    <button class="btn-mini" onclick="toggleVoiceAlerts()">🔊 Voice</button>
+                    <button class="btn-mini" onclick="toggleSoundEffects()">🎶 SFX</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>📊 Analytics</label>
+                <div class="button-group">
+                    <button class="btn-mini" onclick="showPredictiveAnalytics()">🔮 Predict</button>
+                    <button class="btn-mini" onclick="exportAdvancedReport()">📈 Export</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Visualization Container -->
+    <div class="visualization-3d" id="visualization3D">
+        <canvas id="threeCanvas"></canvas>
+        <div class="view-controls">
+            <button onclick="reset3DView()">🔄 Reset</button>
+            <button onclick="close3DView()">❌ Close</button>
+        </div>
+    </div>
+
+    <!-- Achievement System -->
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-content">
+            <div class="achievement-icon">🏆</div>
+            <div class="achievement-text">
+                <h4 id="achievementTitle">Achievement Unlocked!</h4>
+                <p id="achievementDescription">You've discovered something amazing!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-content">
+            <div class="tutorial-header">
+                <h3>🎓 Interactive Tutorial</h3>
+                <button onclick="closeTutorial()">❌</button>
+            </div>
+            <div class="tutorial-body">
+                <div class="tutorial-step" id="tutorialStep">
+                    <h4 id="tutorialStepTitle">Welcome to the Future!</h4>
+                    <p id="tutorialStepContent">Let's explore the advanced features of this RFID system.</p>
+                </div>
+                <div class="tutorial-navigation">
+                    <button onclick="previousTutorialStep()">⬅️ Previous</button>
+                    <span id="tutorialProgress">1 / 8</span>
+                    <button onclick="nextTutorialStep()">Next ➡️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics HUD -->
+    <div class="performance-hud" id="performanceHUD">
+        <div class="hud-item">
+            <span class="hud-label">FPS</span>
+            <span class="hud-value" id="fpsCounter">60</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">Latency</span>
+            <span class="hud-value" id="latencyCounter">12ms</span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">Score</span>
+            <span class="hud-value" id="performanceScore">9850</span>
+        </div>
+    </div>
+
+    <!-- Position Controls -->
+    <div class="position-controls" id="positionControls">
+        <button class="position-btn" id="undoBtn" onclick="undoPosition()" title="Undo Last Move" disabled>
+            ↶
+        </button>
+        <button class="position-btn" id="redoBtn" onclick="redoPosition()" title="Redo Move" disabled>
+            ↷
+        </button>
+        <button class="position-btn" onclick="resetPositions()" title="Reset All Positions">
+            🔄
+        </button>
+        <button class="position-btn" onclick="toggleSnapGrid()" title="Toggle Snap Grid">
+            ⊞
+        </button>
+    </div>
+
+    <!-- Keyboard Shortcuts Indicator -->
+    <div class="keyboard-shortcuts" id="keyboardShortcuts">
+        <h4>⌨️ Keyboard Shortcuts</h4>
+        <div class="shortcut-item">
+            <span>Toggle Panel</span>
+            <span class="shortcut-key">Ctrl + P</span>
+        </div>
+        <div class="shortcut-item">
+            <span>3D View</span>
+            <span class="shortcut-key">Ctrl + 3</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Scan Tags</span>
+            <span class="shortcut-key">Space</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Emergency Mode</span>
+            <span class="shortcut-key">Ctrl + E</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Tutorial</span>
+            <span class="shortcut-key">F1</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Undo Move</span>
+            <span class="shortcut-key">Ctrl + Z</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Redo Move</span>
+            <span class="shortcut-key">Ctrl + Y</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Reset Positions</span>
+            <span class="shortcut-key">Ctrl + R</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Toggle Snap Grid</span>
+            <span class="shortcut-key">G</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Full Width Top Section -->
+        <div class="top-section">
+            <!-- Data Transmission Network -->
+            <div class="card transmission-card">
+                <div class="card-header">
+                    <h2 class="card-title">📡 Advanced Data Transmission Network</h2>
+                    <div class="transmission-controls">
+                        <button class="btn btn-primary" onclick="toggleTransmissionMode()">
+                            <span id="transmissionMode">🔄 Real-time Mode</span>
+                        </button>
+                        <button class="btn btn-success" onclick="boostSignal()">
+                            ⚡ Signal Boost
+                        </button>
+                    </div>
+                </div>
+                <div class="network-diagram" id="networkDiagram">
+                    <!-- Network Nodes -->
+                    <div class="network-node node-cm4" data-node="cm4" title="Raspberry Pi CM4">
+                        🖥️
+                    </div>
+                    <div class="network-node node-r420" data-node="r420" title="UHF RFID Reader Module">
+                        📡
+                    </div>
+                    <div class="network-node node-antenna node-antenna-1" data-node="antenna1" title="UHF RFID Antenna #1">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-2" data-node="antenna2" title="UHF RFID Antenna #2">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-3" data-node="antenna3" title="UHF RFID Antenna #3">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-4" data-node="antenna4" title="UHF RFID Antenna #4">
+                        📶
+                    </div>
+                    <div class="network-node node-poe" data-node="poe" title="PoE Network Switch">
+                        🔌
+                    </div>
+                    <div class="network-node node-power" data-node="power" title="DC Power Supply">
+                        ⚡
+                    </div>
+                    <div class="network-node node-ui" data-node="ui" title="Web UI">
+                        💻
+                    </div>
+
+                    <!-- Node Details Modal -->
+                    <div class="node-details" id="nodeDetails">
+                        <h4 id="nodeTitle"></h4>
+                        <p id="nodeDescription"></p>
+                        <p id="nodeSpecs"></p>
+                    </div>
+                </div>
+
+                <!-- Enhanced Connection Legend -->
+                <div class="connection-legend">
+                    <h4 class="legend-title">Connection Types</h4>
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <div class="legend-line rf-demo"></div>
+                            <div class="legend-info">
+                                <span class="legend-name">RF Transmission</span>
+                                <span class="legend-desc">902-928 MHz, Wireless</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-line ethernet-demo"></div>
+                            <div class="legend-info">
+                                <span class="legend-name">Ethernet</span>
+                                <span class="legend-desc">Gigabit, Wired</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-line power-demo"></div>
+                            <div class="legend-info">
+                                <span class="legend-name">Power Supply</span>
+                                <span class="legend-desc">PoE+, 25.5W</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-line data-demo"></div>
+                            <div class="legend-info">
+                                <span class="legend-name">Data Flow</span>
+                                <span class="legend-desc">Real-time, Bidirectional</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warehouse Geofencing Map -->
+            <div class="card warehouse-card">
+                <div class="card-header">
+                    <h2 class="card-title">🗺️ Advanced Warehouse Geofencing System (50m × 50m)</h2>
+                    <div class="warehouse-controls">
+                        <button class="btn btn-primary" onclick="toggleHeatmap()">
+                            🌡️ Signal Heatmap
+                        </button>
+                        <button class="btn btn-warning" onclick="simulateMovement()">
+                            🚚 Simulate Movement
+                        </button>
+                    </div>
+                </div>
+                <div class="warehouse-container">
+                    <div class="warehouse-map" id="warehouseMap">
+                        <div class="map-grid"></div>
+                        <div class="map-boundary" title="45m Geofence Boundary"></div>
+                        <!-- Snap grid overlay -->
+                        <div class="snap-grid" id="snapGrid"></div>
+                        <!-- Signal strength overlay -->
+                        <canvas id="signalCanvas" class="signal-overlay"></canvas>
+                        <!-- Tags will be dynamically positioned here -->
+                    </div>
+                    <div class="warehouse-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalTags">30</div>
+                            <div class="stat-label">Total Tags</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="activeTags">30</div>
+                            <div class="stat-label">Active Tags</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="violations">0</div>
+                            <div class="stat-label">Violations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="avgRSSI">-45</div>
+                            <div class="stat-label">Avg RSSI (dBm)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="warehouse-legend">
+                    <div class="legend-group">
+                        <h4>Tag Types</h4>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-2">
+                                <div class="legend-dot metal"></div>
+                                <span>Metal Surface Tags</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="legend-dot non-metal"></div>
+                                <span>General Purpose Tags</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="legend-dot violation"></div>
+                                <span>Boundary Violations</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="legend-group">
+                        <h4>Signal Strength</h4>
+                        <div class="signal-strength-bar">
+                            <div class="strength-segment strong"></div>
+                            <div class="strength-segment medium"></div>
+                            <div class="strength-segment weak"></div>
+                        </div>
+                        <div class="strength-labels">
+                            <span>Strong (-30 to -40 dBm)</span>
+                            <span>Medium (-40 to -50 dBm)</span>
+                            <span>Weak (-50 to -60 dBm)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section with Two Columns -->
+        <div class="bottom-section">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Tag Inventory -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📋 Tag Inventory</h2>
+                    <button class="btn btn-primary" onclick="scanTags()">
+                        🔍 Scan Tags
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Tag ID</th>
+                                <th>Data</th>
+                                <th>RSSI</th>
+                                <th>Last Seen</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Dynamic content will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Read/Write Controls -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚙️ Read/Write Controls</h2>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Select Tag</label>
+                        <select class="form-select" id="selectedTag">
+                            <option value="">Choose a tag...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Write Data</label>
+                        <input type="text" class="form-input" id="writeData" placeholder="e.g., EQUIP1234">
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button class="btn btn-success" onclick="writeTag()">
+                        ✏️ Write Data
+                    </button>
+                    <button class="btn btn-primary" onclick="readTag()">
+                        📖 Read Tag
+                    </button>
+                </div>
+                <div id="operationResult" class="mt-2"></div>
+            </div>
+        </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+
+            <!-- Settings Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚙️ System Settings</h2>
+                </div>
+                <div class="settings-panel">
+                    <div class="form-group">
+                        <label class="form-label">RF Power Level</label>
+                        <input type="range" class="power-slider" id="powerSlider" min="0" max="30" value="27" oninput="updatePower(this.value)">
+                        <div class="text-center">
+                            <span class="power-value" id="powerValue">27 dBm</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Antenna Read Order</label>
+                        <select class="form-select" id="antennaOrder">
+                            <option value="sequential">Sequential (1→2→3→4)</option>
+                            <option value="parallel">Parallel (All)</option>
+                            <option value="custom">Custom Order</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-warning w-full" onclick="exportCSV()">
+                            📊 Export CSV Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🚨 System Alerts</h2>
+                </div>
+                <div id="alertsContainer">
+                    <!-- Dynamic alerts will be inserted here -->
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // System Data
+        const systemData = {
+            tags: [
+                // Metal surface tags
+                { id: 'MTL001', type: 'metal', data: 'DRILL001', rssi: -45, x: 20, y: 30, lastSeen: new Date() },
+                { id: 'MTL002', type: 'metal', data: 'WELDER002', rssi: -52, x: 35, y: 25, lastSeen: new Date() },
+                { id: 'MTL003', type: 'metal', data: 'CRANE003', rssi: -38, x: 60, y: 40, lastSeen: new Date() },
+                { id: 'MTL004', type: 'metal', data: 'FORKLIFT004', rssi: -41, x: 15, y: 60, lastSeen: new Date() },
+                { id: 'MTL005', type: 'metal', data: 'COMPRESSOR005', rssi: -48, x: 70, y: 20, lastSeen: new Date() },
+                { id: 'MTL006', type: 'metal', data: 'GENERATOR006', rssi: -55, x: 25, y: 75, lastSeen: new Date() },
+                { id: 'MTL007', type: 'metal', data: 'PUMP007', rssi: -43, x: 80, y: 60, lastSeen: new Date() },
+                { id: 'MTL008', type: 'metal', data: 'MOTOR008', rssi: -50, x: 45, y: 15, lastSeen: new Date() },
+                { id: 'MTL009', type: 'metal', data: 'VALVE009', rssi: -46, x: 55, y: 70, lastSeen: new Date() },
+                { id: 'MTL010', type: 'metal', data: 'TANK010', rssi: -39, x: 30, y: 50, lastSeen: new Date() },
+                { id: 'MTL011', type: 'metal', data: 'CONVEYOR011', rssi: -53, x: 75, y: 35, lastSeen: new Date() },
+                { id: 'MTL012', type: 'metal', data: 'PRESS012', rssi: -44, x: 40, y: 80, lastSeen: new Date() },
+                { id: 'MTL013', type: 'metal', data: 'LATHE013', rssi: -47, x: 65, y: 25, lastSeen: new Date() },
+                { id: 'MTL014', type: 'metal', data: 'MILL014', rssi: -51, x: 20, y: 45, lastSeen: new Date() },
+                { id: 'MTL015', type: 'metal', data: 'SAW015', rssi: -42, x: 85, y: 50, lastSeen: new Date() },
+                { id: 'MTL016', type: 'metal', data: 'GRINDER016', rssi: -49, x: 50, y: 35, lastSeen: new Date() },
+                { id: 'MTL017', type: 'metal', data: 'ROBOT017', rssi: -40, x: 30, y: 65, lastSeen: new Date() },
+                { id: 'MTL018', type: 'metal', data: 'HOIST018', rssi: -54, x: 70, y: 75, lastSeen: new Date() },
+                { id: 'MTL019', type: 'metal', data: 'JACK019', rssi: -45, x: 15, y: 35, lastSeen: new Date() },
+                { id: 'MTL020', type: 'metal', data: 'WINCH020', rssi: -48, x: 60, y: 55, lastSeen: new Date() },
+
+                // General purpose tags
+                { id: 'GEN001', type: 'non-metal', data: 'PALLET001', rssi: -35, x: 25, y: 20, lastSeen: new Date() },
+                { id: 'GEN002', type: 'non-metal', data: 'CONTAINER002', rssi: -42, x: 45, y: 60, lastSeen: new Date() },
+                { id: 'GEN003', type: 'non-metal', data: 'BOX003', rssi: -38, x: 65, y: 30, lastSeen: new Date() },
+                { id: 'GEN004', type: 'non-metal', data: 'CRATE004', rssi: -44, x: 35, y: 70, lastSeen: new Date() },
+                { id: 'GEN005', type: 'non-metal', data: 'BARREL005', rssi: -40, x: 55, y: 45, lastSeen: new Date() },
+                { id: 'GEN006', type: 'non-metal', data: 'RACK006', rssi: -46, x: 75, y: 65, lastSeen: new Date() },
+                { id: 'GEN007', type: 'non-metal', data: 'SHELF007', rssi: -36, x: 20, y: 55, lastSeen: new Date() },
+                { id: 'GEN008', type: 'non-metal', data: 'CART008', rssi: -43, x: 80, y: 40, lastSeen: new Date() },
+                { id: 'GEN009', type: 'non-metal', data: 'TROLLEY009', rssi: -41, x: 40, y: 25, lastSeen: new Date() },
+                { id: 'GEN010', type: 'non-metal', data: 'PLATFORM010', rssi: -39, x: 50, y: 75, lastSeen: new Date() }
+            ],
+            nodeDetails: {
+                cm4: {
+                    title: 'Raspberry Pi CM4',
+                    description: 'Central processing unit with 4GB RAM, 32GB eMMC',
+                    specs: 'ARM Cortex-A72 quad-core, WiFi, Bluetooth, GPIO'
+                },
+                r420: {
+                    title: 'UHF RFID Reader Module',
+                    description: 'UHF RFID reader with 4 antenna ports',
+                    specs: '902-928 MHz, 50m range, PoE powered, 30 dBm max power'
+                },
+                antenna1: {
+                    title: 'UHF RFID Antenna #1',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna2: {
+                    title: 'UHF RFID Antenna #2',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna3: {
+                    title: 'UHF RFID Antenna #3',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna4: {
+                    title: 'UHF RFID Antenna #4',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                poe: {
+                    title: 'PoE Network Switch',
+                    description: '8-port Gigabit PoE+ switch',
+                    specs: '120W PoE budget, fanless, auto-sensing'
+                },
+                power: {
+                    title: 'DC Power Supply',
+                    description: 'External power adapter for PoE switch',
+                    specs: '15W output, universal input, compact design'
+                },
+                ui: {
+                    title: 'Web User Interface',
+                    description: 'Browser-based control interface',
+                    specs: 'Real-time monitoring, responsive design, mobile compatible'
+                }
+            }
+        };
+
+        let currentPower = 27;
+        let isScanning = false;
+        let dataFlowInterval;
+        let transmissionMode = 'realtime';
+        let heatmapEnabled = false;
+        let signalCanvas;
+        let signalCtx;
+
+        // Innovation features
+        let currentTheme = 'futuristic';
+        let currentScenario = 'normal';
+        let voiceEnabled = false;
+        let soundEnabled = false;
+        let arMode = false;
+        let tutorialActive = false;
+        let tutorialStep = 0;
+        let performanceScore = 9850;
+        let achievements = [];
+        let three3DScene = null;
+        let three3DRenderer = null;
+        let three3DCamera = null;
+        let panelOpen = false;
+
+        // Drag and Drop features
+        let isDragging = false;
+        let dragElement = null;
+        let dragType = null; // 'material' or 'tag'
+        let dragOffset = { x: 0, y: 0 };
+        let snapGridEnabled = false;
+        let positionHistory = [];
+        let positionHistoryIndex = -1;
+        let originalPositions = {
+            materials: [],
+            tags: []
+        };
+
+        // Performance monitoring
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let fps = 60;
+
+        // Tutorial steps
+        const tutorialSteps = [
+            {
+                title: "Welcome to the Future!",
+                content: "This is an advanced RFID warehouse simulation with cutting-edge features. Let's explore what makes it special."
+            },
+            {
+                title: "Innovation Panel",
+                content: "Click the ⚡ button on the right to access advanced controls including themes, scenarios, and 3D visualization."
+            },
+            {
+                title: "Data Transmission Network",
+                content: "Watch the real-time data flow between components. Try the 'Signal Boost' and 'Burst Mode' for enhanced effects."
+            },
+            {
+                title: "Warehouse Visualization",
+                content: "The warehouse map shows real-time tag positions with signal heatmaps and movement simulation."
+            },
+            {
+                title: "Keyboard Shortcuts",
+                content: "Use keyboard shortcuts for power users: Ctrl+P (panel), Ctrl+3 (3D view), Space (scan), Ctrl+E (emergency)."
+            },
+            {
+                title: "Voice & Audio",
+                content: "Enable voice alerts and sound effects for an immersive experience with real-time system announcements."
+            },
+            {
+                title: "Achievement System",
+                content: "Unlock achievements by exploring features, completing tasks, and optimizing system performance."
+            },
+            {
+                title: "Advanced Analytics",
+                content: "Access predictive analytics, performance metrics, and export capabilities for professional reporting."
+            }
+        ];
+
+        // Initialize the simulation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth transitions first
+            addSmoothTransitions();
+
+            initializeSimulation();
+            initializeSignalCanvas();
+            startDataFlowAnimation();
+            updateInventoryTable();
+            renderWarehouseMap();
+            updateWarehouseStats();
+            updateUptime();
+
+            // Update uptime every minute
+            setInterval(updateUptime, 60000);
+
+            // Simulate tag movement every 10 seconds
+            setInterval(simulateTagMovement, 10000);
+
+            // Add periodic signal waves for visual appeal
+            setInterval(() => {
+                if (!isScanning && Math.random() > 0.7) {
+                    createSignalWaves();
+                }
+            }, 5000);
+
+            // Initialize innovative features
+            initializeInnovativeFeatures();
+
+            // Initialize drag and drop
+            initializeDragAndDrop();
+
+            // Start performance monitoring
+            startPerformanceMonitoring();
+
+            // Setup keyboard shortcuts
+            setupKeyboardShortcuts();
+
+            // Auto-open innovation panel after 3 seconds
+            setTimeout(() => {
+                if (!panelOpen) {
+                    toggleInnovationPanel();
+                    showAchievement("First Steps", "Welcome to the future of RFID simulation!");
+                }
+            }, 3000);
+        });
+
+        // Initialize innovative features
+        function initializeInnovativeFeatures() {
+            // Apply initial theme
+            applyTheme(currentTheme);
+
+            // Initialize speech synthesis
+            if (window.speechSynthesis) {
+                voiceEnabled = true;
+                speak("RFID Warehouse System initialized. Welcome to the future.");
+            }
+
+            // Initialize 3D scene
+            if (window.THREE) {
+                init3DScene();
+            }
+
+            // Show keyboard shortcuts hint
+            setTimeout(() => {
+                document.getElementById('keyboardShortcuts').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('keyboardShortcuts').classList.remove('show');
+                }, 5000);
+            }, 1000);
+        }
+
+        // Toggle innovation panel
+        function toggleInnovationPanel() {
+            const panel = document.getElementById('innovationPanel');
+            panelOpen = !panelOpen;
+
+            if (panelOpen) {
+                panel.classList.add('open');
+                showAchievement("Explorer", "You discovered the innovation panel!");
+            } else {
+                panel.classList.remove('open');
+            }
+        }
+
+        // Change theme
+        function changeTheme(theme) {
+            currentTheme = theme;
+            applyTheme(theme);
+            showAchievement("Style Master", `Switched to ${theme} theme!`);
+            speak(`Theme changed to ${theme}`);
+        }
+
+        // Apply theme with professional color schemes
+        function applyTheme(theme) {
+            const root = document.documentElement;
+
+            switch(theme) {
+                case 'cyberpunk':
+                    root.style.setProperty('--accent-blue', '#e91e63');
+                    root.style.setProperty('--accent-green', '#00e676');
+                    root.style.setProperty('--accent-purple', '#9c27b0');
+                    root.style.setProperty('--connection-rf', '#00e676');
+                    root.style.setProperty('--connection-data', '#e91e63');
+                    break;
+                case 'matrix':
+                    root.style.setProperty('--accent-blue', '#4caf50');
+                    root.style.setProperty('--accent-green', '#8bc34a');
+                    root.style.setProperty('--accent-purple', '#689f38');
+                    root.style.setProperty('--connection-rf', '#4caf50');
+                    root.style.setProperty('--connection-data', '#8bc34a');
+                    break;
+                case 'classic':
+                    root.style.setProperty('--accent-blue', '#2563eb');
+                    root.style.setProperty('--accent-green', '#059669');
+                    root.style.setProperty('--accent-purple', '#7c3aed');
+                    root.style.setProperty('--connection-rf', '#059669');
+                    root.style.setProperty('--connection-data', '#2563eb');
+                    break;
+                default: // futuristic - professional blue/green
+                    root.style.setProperty('--accent-blue', '#3b82f6');
+                    root.style.setProperty('--accent-green', '#22c55e');
+                    root.style.setProperty('--accent-purple', '#8b5cf6');
+                    root.style.setProperty('--connection-rf', '#059669');
+                    root.style.setProperty('--connection-data', '#2563eb');
+            }
+        }
+
+        // Initialize simulation
+        function initializeSimulation() {
+            // Add click handlers for network nodes
+            document.querySelectorAll('.network-node').forEach(node => {
+                node.addEventListener('click', showNodeDetails);
+            });
+
+            // Add enhanced interactions for material cards
+            document.querySelectorAll('.material-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    // Add a subtle animation when clicked
+                    this.style.transform = 'translateY(-8px) scale(1.05)';
+                    this.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2)';
+
+                    setTimeout(() => {
+                        this.style.transform = 'translateY(-8px) scale(1.02)';
+                        this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+                    }, 200);
+                });
+
+                // Add hover interconnection effects
+                card.addEventListener('mouseenter', function() {
+                    const cardType = this.querySelector('.material-icon').classList[1];
+                    highlightRelatedComponents(cardType);
+                });
+
+                card.addEventListener('mouseleave', function() {
+                    clearComponentHighlights();
+                });
+            });
+
+            // Populate tag dropdown
+            const tagSelect = document.getElementById('selectedTag');
+            systemData.tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.id;
+                option.textContent = `${tag.id} (${tag.data})`;
+                tagSelect.appendChild(option);
+            });
+
+            // Initialize alerts
+            checkGeofenceViolations();
+
+            // Add a delay before creating connections to ensure DOM is ready
+            setTimeout(() => {
+                createStaticConnections();
+            }, 500);
+        }
+
+        // Show node details on click
+        function showNodeDetails(event) {
+            const nodeType = event.target.dataset.node;
+            const details = systemData.nodeDetails[nodeType];
+
+            if (details) {
+                const detailsEl = document.getElementById('nodeDetails');
+                document.getElementById('nodeTitle').textContent = details.title;
+                document.getElementById('nodeDescription').textContent = details.description;
+                document.getElementById('nodeSpecs').textContent = details.specs;
+
+                detailsEl.style.left = event.pageX + 10 + 'px';
+                detailsEl.style.top = event.pageY + 10 + 'px';
+                detailsEl.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    detailsEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Start data flow animation
+        function startDataFlowAnimation() {
+            // Start animated data flows (static connections created in initializeSimulation)
+            dataFlowInterval = setInterval(() => {
+                createDataFlowLine();
+            }, 1500);
+        }
+
+        // Create static connection lines between components
+        function createStaticConnections() {
+            const diagram = document.getElementById('networkDiagram');
+            const connections = [
+                // Power connections (red)
+                { from: 'power', to: 'poe', type: 'power' },
+                { from: 'poe', to: 'r420', type: 'power' },
+
+                // Ethernet connections (blue)
+                { from: 'r420', to: 'cm4', type: 'ethernet' },
+                { from: 'cm4', to: 'ui', type: 'ethernet' },
+
+                // RF connections (green - from antennas to R420)
+                { from: 'antenna1', to: 'r420', type: 'rf' },
+                { from: 'antenna2', to: 'r420', type: 'rf' },
+                { from: 'antenna3', to: 'r420', type: 'rf' },
+                { from: 'antenna4', to: 'r420', type: 'rf' }
+            ];
+
+            connections.forEach(conn => {
+                const fromNode = document.querySelector(`[data-node="${conn.from}"]`);
+                const toNode = document.querySelector(`[data-node="${conn.to}"]`);
+
+                if (fromNode && toNode) {
+                    const line = createConnectionLine(fromNode, toNode, conn.type);
+                    diagram.appendChild(line);
+                }
+            });
+        }
+
+        // Create a connection line between two nodes with label
+        function createConnectionLine(fromNode, toNode, type) {
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+            const diagramRect = document.getElementById('networkDiagram').getBoundingClientRect();
+
+            const fromX = fromRect.left + fromRect.width / 2 - diagramRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - diagramRect.top;
+            const toX = toRect.left + toRect.width / 2 - diagramRect.left;
+            const toY = toRect.top + toRect.height / 2 - diagramRect.top;
+
+            const length = Math.sqrt(Math.pow(toX - fromX, 2) + Math.pow(toY - fromY, 2));
+            const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
+
+            const line = document.createElement('div');
+            line.className = `connection-line ${type}`;
+            line.style.left = fromX + 'px';
+            line.style.top = fromY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 50%';
+
+            // Add connection label for static connections
+            if (type !== 'data') {
+                const label = document.createElement('div');
+                label.className = 'connection-label';
+                label.textContent = getConnectionLabel(type);
+
+                // Position label at midpoint
+                const midX = fromX + (toX - fromX) / 2;
+                const midY = fromY + (toY - fromY) / 2;
+
+                label.style.left = midX + 'px';
+                label.style.top = (midY - 15) + 'px';
+                label.style.transform = 'translateX(-50%)';
+
+                // Add label to diagram
+                setTimeout(() => {
+                    document.getElementById('networkDiagram').appendChild(label);
+                }, 100);
+            }
+
+            return line;
+        }
+
+        // Get connection label text
+        function getConnectionLabel(type) {
+            switch(type) {
+                case 'rf': return 'RF 915MHz';
+                case 'ethernet': return 'Gigabit';
+                case 'power': return 'PoE+ 25W';
+                default: return '';
+            }
+        }
+
+        // Create animated data flow lines with particles
+        function createDataFlowLine() {
+            const diagram = document.getElementById('networkDiagram');
+
+            // Define specific data flow paths
+            const dataFlows = [
+                // Tag reads: Antennas → R420 → CM4 → UI
+                { from: 'antenna1', to: 'r420', type: 'data', speed: 'normal' },
+                { from: 'antenna2', to: 'r420', type: 'data', speed: 'normal' },
+                { from: 'antenna3', to: 'r420', type: 'data', speed: 'normal' },
+                { from: 'antenna4', to: 'r420', type: 'data', speed: 'normal' },
+                { from: 'r420', to: 'cm4', type: 'data', speed: 'fast' },
+                { from: 'cm4', to: 'ui', type: 'data', speed: 'fast' }
+            ];
+
+            // Pick a random data flow
+            const flow = dataFlows[Math.floor(Math.random() * dataFlows.length)];
+            const fromNode = document.querySelector(`[data-node="${flow.from}"]`);
+            const toNode = document.querySelector(`[data-node="${flow.to}"]`);
+
+            if (fromNode && toNode) {
+                // Add transmitting effect to source node
+                fromNode.classList.add('transmitting');
+                setTimeout(() => fromNode.classList.remove('transmitting'), 1500);
+
+                // Create data particle
+                createDataParticle(fromNode, toNode, flow.speed);
+
+                // Add active effect to destination node
+                setTimeout(() => {
+                    toNode.classList.add('active');
+                    setTimeout(() => toNode.classList.remove('active'), 500);
+                }, flow.speed === 'fast' ? 500 : 1000);
+            }
+        }
+
+        // Create animated data particles
+        function createDataParticle(fromNode, toNode, speed) {
+            const diagram = document.getElementById('networkDiagram');
+            const fromRect = fromNode.getBoundingClientRect();
+            const toRect = toNode.getBoundingClientRect();
+            const diagramRect = diagram.getBoundingClientRect();
+
+            const fromX = fromRect.left + fromRect.width / 2 - diagramRect.left;
+            const fromY = fromRect.top + fromRect.height / 2 - diagramRect.top;
+            const toX = toRect.left + toRect.width / 2 - diagramRect.left;
+            const toY = toRect.top + toRect.height / 2 - diagramRect.top;
+
+            const particle = document.createElement('div');
+            particle.className = `data-particle ${speed === 'fast' ? 'fast' : ''}`;
+            particle.style.left = fromX + 'px';
+            particle.style.top = fromY + 'px';
+
+            // Calculate movement
+            const deltaX = toX - fromX;
+            const deltaY = toY - fromY;
+
+            particle.style.setProperty('--deltaX', deltaX + 'px');
+            particle.style.setProperty('--deltaY', deltaY + 'px');
+
+            // Custom animation for particle movement
+            particle.style.animation = `particleMove${speed === 'fast' ? 'Fast' : ''} ${speed === 'fast' ? '1s' : '2s'} linear`;
+
+            diagram.appendChild(particle);
+
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, speed === 'fast' ? 1000 : 2000);
+        }
+
+        // Create signal waves from antennas during scanning
+        function createSignalWaves() {
+            const antennas = document.querySelectorAll('.node-antenna');
+            antennas.forEach(antenna => {
+                const wave = document.createElement('div');
+                wave.className = 'signal-wave';
+
+                const rect = antenna.getBoundingClientRect();
+                const diagramRect = document.getElementById('networkDiagram').getBoundingClientRect();
+
+                wave.style.left = (rect.left + rect.width / 2 - diagramRect.left - 20) + 'px';
+                wave.style.top = (rect.top + rect.height / 2 - diagramRect.top - 20) + 'px';
+                wave.style.width = '40px';
+                wave.style.height = '40px';
+
+                document.getElementById('networkDiagram').appendChild(wave);
+
+                setTimeout(() => {
+                    if (wave.parentNode) {
+                        wave.parentNode.removeChild(wave);
+                    }
+                }, 3000);
+            });
+        }
+
+        // Update inventory table
+        function updateInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            systemData.tags.forEach(tag => {
+                const row = document.createElement('tr');
+
+                // Calculate RSSI strength
+                let rssiClass = 'rssi-weak';
+                let rssiWidth = '20%';
+                if (tag.rssi > -40) {
+                    rssiClass = 'rssi-strong';
+                    rssiWidth = '80%';
+                } else if (tag.rssi > -50) {
+                    rssiClass = 'rssi-medium';
+                    rssiWidth = '60%';
+                }
+
+                // Calculate location based on coordinates
+                const location = `Zone ${Math.ceil(tag.x / 25)}-${Math.ceil(tag.y / 25)}`;
+
+                row.innerHTML = `
+                    <td>${tag.id}</td>
+                    <td>${tag.data}</td>
+                    <td>
+                        <div class="rssi-indicator">
+                            <div class="rssi-bar ${rssiClass}" style="width: ${rssiWidth}"></div>
+                        </div>
+                        ${tag.rssi} dBm
+                    </td>
+                    <td>${tag.lastSeen.toLocaleTimeString()}</td>
+                    <td>${location}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Render warehouse map with tags
+        function renderWarehouseMap() {
+            const map = document.getElementById('warehouseMap');
+
+            // Clear existing tags
+            const existingTags = map.querySelectorAll('.map-tag');
+            existingTags.forEach(tag => tag.remove());
+
+            systemData.tags.forEach(tag => {
+                const tagEl = document.createElement('div');
+                tagEl.className = `map-tag ${tag.type} draggable`;
+                tagEl.style.left = tag.x + '%';
+                tagEl.style.top = tag.y + '%';
+                tagEl.title = `${tag.id}: ${tag.data} (${tag.rssi} dBm) - Drag to move`;
+                tagEl.dataset.tagId = tag.id;
+
+                // Check for boundary violations (45m = 90% of 50m)
+                if (tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10) {
+                    tagEl.classList.add('violation');
+                }
+
+                // Add drag event listeners
+                tagEl.addEventListener('mousedown', (e) => handleTagMouseDown(e, tag.id));
+
+                // Add touch support for mobile
+                tagEl.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const mouseEvent = new MouseEvent('mousedown', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    handleTagMouseDown(mouseEvent, tag.id);
+                });
+
+                map.appendChild(tagEl);
+            });
+        }
+
+        // Check for geofence violations
+        function checkGeofenceViolations() {
+            const violations = systemData.tags.filter(tag =>
+                tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10
+            );
+
+            const alertsContainer = document.getElementById('alertsContainer');
+            alertsContainer.innerHTML = '';
+
+            if (violations.length > 0) {
+                violations.forEach(tag => {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-danger';
+                    alert.innerHTML = `
+                        <strong>Geofence Violation!</strong><br>
+                        Tag ${tag.id} (${tag.data}) is outside the 45m boundary.
+                        <br><small>Current RSSI: ${tag.rssi} dBm</small>
+                    `;
+                    alertsContainer.appendChild(alert);
+                });
+            } else {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.innerHTML = '<strong>All Clear!</strong><br>All tags are within the geofence boundary.';
+                alertsContainer.appendChild(alert);
+            }
+        }
+
+        // Enhanced scan tags function with visual effects
+        function scanTags() {
+            isScanning = true;
+            const btn = event.target;
+            btn.innerHTML = '<span class="loading-spinner"></span>Scanning...';
+            btn.disabled = true;
+
+            // Add scanning indicators to antennas
+            const antennas = document.querySelectorAll('.node-antenna');
+            antennas.forEach(antenna => {
+                const indicator = document.createElement('div');
+                indicator.className = 'scanning-indicator';
+                antenna.appendChild(indicator);
+            });
+
+            // Create signal waves
+            createSignalWaves();
+
+            // Simulate progressive scanning with visual feedback
+            let scannedCount = 0;
+            const scanInterval = setInterval(() => {
+                if (scannedCount < systemData.tags.length) {
+                    // Highlight tags being scanned on the map
+                    const tagElements = document.querySelectorAll('.map-tag');
+                    if (tagElements[scannedCount]) {
+                        tagElements[scannedCount].style.animation = 'scanPulse 0.5s ease-in-out';
+                        setTimeout(() => {
+                            if (tagElements[scannedCount]) {
+                                tagElements[scannedCount].style.animation = '';
+                            }
+                        }, 500);
+                    }
+
+                    scannedCount++;
+                    btn.innerHTML = `<span class="loading-spinner"></span>Scanning... (${scannedCount}/${systemData.tags.length})`;
+                } else {
+                    clearInterval(scanInterval);
+
+                    // Update tag data
+                    systemData.tags.forEach(tag => {
+                        tag.lastSeen = new Date();
+                        // Simulate RSSI variations
+                        tag.rssi += Math.random() * 6 - 3; // ±3 dBm variation
+                        tag.rssi = Math.max(-60, Math.min(-30, tag.rssi)); // Keep in realistic range
+                    });
+
+                    // Remove scanning indicators
+                    document.querySelectorAll('.scanning-indicator').forEach(indicator => {
+                        indicator.remove();
+                    });
+
+                    updateInventoryTable();
+                    renderWarehouseMap();
+                    checkGeofenceViolations();
+
+                    btn.innerHTML = '🔍 Scan Tags';
+                    btn.disabled = false;
+                    isScanning = false;
+
+                    // Show success message with enhanced feedback
+                    showAlert('success', `✅ Successfully scanned ${systemData.tags.length} tags in ${(scannedCount * 100)}ms`);
+
+                    // Create celebration effect
+                    createSignalWaves();
+                }
+            }, 100);
+        }
+
+        // Read tag function
+        function readTag() {
+            const selectedTagId = document.getElementById('selectedTag').value;
+            if (!selectedTagId) {
+                showAlert('warning', 'Please select a tag to read');
+                return;
+            }
+
+            const tag = systemData.tags.find(t => t.id === selectedTagId);
+            if (tag) {
+                const result = document.getElementById('operationResult');
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Read Successful!</strong><br>
+                        Tag ID: ${tag.id}<br>
+                        Data: ${tag.data}<br>
+                        RSSI: ${tag.rssi} dBm<br>
+                        Type: ${tag.type === 'metal' ? 'Metal Surface Tag' : 'General Purpose Tag'}
+                    </div>
+                `;
+            }
+        }
+
+        // Write tag function
+        function writeTag() {
+            const selectedTagId = document.getElementById('selectedTag').value;
+            const writeData = document.getElementById('writeData').value;
+
+            if (!selectedTagId) {
+                showAlert('warning', 'Please select a tag to write to');
+                return;
+            }
+
+            if (!writeData) {
+                showAlert('warning', 'Please enter data to write');
+                return;
+            }
+
+            const tag = systemData.tags.find(t => t.id === selectedTagId);
+            if (tag) {
+                // Simulate write operation
+                tag.data = writeData;
+                tag.lastSeen = new Date();
+
+                updateInventoryTable();
+
+                const result = document.getElementById('operationResult');
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Write Successful!</strong><br>
+                        Tag ID: ${tag.id}<br>
+                        New Data: ${writeData}<br>
+                        Write Range: ${tag.type === 'metal' ? '20-30m' : '25-35m'}
+                    </div>
+                `;
+
+                // Clear the input
+                document.getElementById('writeData').value = '';
+            }
+        }
+
+        // Update power setting
+        function updatePower(value) {
+            currentPower = value;
+            document.getElementById('powerValue').textContent = value + ' dBm';
+
+            // Simulate power effect on range
+            const rangeEffect = value / 30; // 0 to 1
+            systemData.tags.forEach(tag => {
+                // Adjust RSSI based on power setting
+                const baseRSSI = tag.rssi;
+                const powerAdjustment = (value - 27) * 2; // ±6 dBm range
+                tag.rssi = Math.max(-60, Math.min(-30, baseRSSI + powerAdjustment));
+            });
+
+            updateInventoryTable();
+            renderWarehouseMap();
+        }
+
+        // Export CSV function
+        function exportCSV() {
+            const headers = ['Tag ID', 'Data', 'RSSI (dBm)', 'Last Seen', 'Location', 'Type'];
+            const csvContent = [
+                headers.join(','),
+                ...systemData.tags.map(tag => [
+                    tag.id,
+                    tag.data,
+                    tag.rssi,
+                    tag.lastSeen.toISOString(),
+                    `Zone ${Math.ceil(tag.x / 25)}-${Math.ceil(tag.y / 25)}`,
+                    tag.type === 'metal' ? 'Metal Surface Tag' : 'General Purpose Tag'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rfid_inventory_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            showAlert('success', 'CSV report exported successfully');
+        }
+
+        // Update uptime display
+        function updateUptime() {
+            const startTime = new Date('2024-01-01T00:00:00');
+            const now = new Date();
+            const diff = now - startTime;
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('uptime').textContent = `CM4 Uptime: ${hours}h ${minutes}m`;
+        }
+
+        // Show alert function
+        function showAlert(type, message) {
+            const alertsContainer = document.getElementById('alertsContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong><br>${message}`;
+
+            // Insert at the top
+            alertsContainer.insertBefore(alert, alertsContainer.firstChild);
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 5000);
+
+            // Keep only last 3 alerts
+            while (alertsContainer.children.length > 3) {
+                alertsContainer.removeChild(alertsContainer.lastChild);
+            }
+        }
+
+        // Highlight related components when hovering over material cards
+        function highlightRelatedComponents(cardType) {
+            const networkNodes = document.querySelectorAll('.network-node');
+
+            switch(cardType) {
+                case 'processing':
+                    highlightNode('cm4');
+                    break;
+                case 'reader':
+                    highlightNode('r420');
+                    break;
+                case 'antenna':
+                    highlightNode('antenna1');
+                    highlightNode('antenna2');
+                    highlightNode('antenna3');
+                    highlightNode('antenna4');
+                    break;
+                case 'network':
+                    highlightNode('poe');
+                    break;
+                case 'power':
+                    highlightNode('power');
+                    break;
+                case 'tag-metal':
+                case 'tag-nonmetal':
+                    // Highlight tags on the map
+                    const mapTags = document.querySelectorAll(`.map-tag.${cardType === 'tag-metal' ? 'metal' : 'non-metal'}`);
+                    mapTags.forEach(tag => {
+                        tag.style.animation = 'pulse 1s infinite';
+                    });
+                    break;
+            }
+        }
+
+        function highlightNode(nodeId) {
+            const node = document.querySelector(`[data-node="${nodeId}"]`);
+            if (node) {
+                node.classList.add('active');
+            }
+        }
+
+        function clearComponentHighlights() {
+            // Clear network node highlights
+            document.querySelectorAll('.network-node').forEach(node => {
+                node.classList.remove('active');
+            });
+
+            // Clear map tag highlights
+            document.querySelectorAll('.map-tag').forEach(tag => {
+                tag.style.animation = '';
+            });
+        }
+
+        // Enhanced tag movement with smooth transitions
+        function simulateTagMovement() {
+            if (!isScanning) {
+                // Move a random tag slightly with smooth animation
+                const randomTag = systemData.tags[Math.floor(Math.random() * systemData.tags.length)];
+                const oldX = randomTag.x;
+                const oldY = randomTag.y;
+
+                randomTag.x += (Math.random() - 0.5) * 5; // ±2.5% movement
+                randomTag.y += (Math.random() - 0.5) * 5;
+
+                // Keep within bounds
+                randomTag.x = Math.max(5, Math.min(95, randomTag.x));
+                randomTag.y = Math.max(5, Math.min(95, randomTag.y));
+
+                // Update displays with smooth transition
+                renderWarehouseMap();
+                checkGeofenceViolations();
+
+                // Create a brief data transmission effect for the moved tag
+                if (Math.abs(randomTag.x - oldX) > 2 || Math.abs(randomTag.y - oldY) > 2) {
+                    // Simulate tag reporting its new position
+                    setTimeout(() => {
+                        createDataFlowLine();
+                    }, Math.random() * 1000);
+                }
+            }
+        }
+
+        // Add smooth transitions to all interactive elements
+        function addSmoothTransitions() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .network-node, .map-tag, .material-card {
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                .btn {
+                    transition: all 0.2s ease-in-out;
+                }
+
+                .btn:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                }
+
+                .inventory-table tr {
+                    transition: background-color 0.2s ease;
+                }
+
+                .inventory-table tr:hover {
+                    background-color: var(--bg-gray-50);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Initialize signal canvas for heatmap
+        function initializeSignalCanvas() {
+            signalCanvas = document.getElementById('signalCanvas');
+            signalCtx = signalCanvas.getContext('2d');
+
+            // Set canvas size to match warehouse map
+            const warehouseMap = document.getElementById('warehouseMap');
+            signalCanvas.width = warehouseMap.offsetWidth;
+            signalCanvas.height = warehouseMap.offsetHeight;
+
+            // Resize canvas when window resizes
+            window.addEventListener('resize', () => {
+                signalCanvas.width = warehouseMap.offsetWidth;
+                signalCanvas.height = warehouseMap.offsetHeight;
+                if (heatmapEnabled) {
+                    drawSignalHeatmap();
+                }
+            });
+        }
+
+        // Toggle transmission mode
+        function toggleTransmissionMode() {
+            transmissionMode = transmissionMode === 'realtime' ? 'burst' : 'realtime';
+            const modeElement = document.getElementById('transmissionMode');
+
+            if (transmissionMode === 'burst') {
+                modeElement.textContent = '💥 Burst Mode';
+                // Increase data flow frequency
+                clearInterval(dataFlowInterval);
+                dataFlowInterval = setInterval(() => {
+                    createDataFlowLine();
+                    // Create multiple particles in burst mode
+                    setTimeout(() => createDataFlowLine(), 200);
+                    setTimeout(() => createDataFlowLine(), 400);
+                }, 800);
+            } else {
+                modeElement.textContent = '🔄 Real-time Mode';
+                // Normal data flow frequency
+                clearInterval(dataFlowInterval);
+                dataFlowInterval = setInterval(() => {
+                    createDataFlowLine();
+                }, 1500);
+            }
+
+            showAlert('success', `Transmission mode changed to ${transmissionMode}`);
+        }
+
+        // Signal boost effect
+        function boostSignal() {
+            // Add boost effect to all antennas
+            const antennas = document.querySelectorAll('.node-antenna');
+            antennas.forEach(antenna => {
+                antenna.style.animation = 'nodePulse 0.5s ease-in-out 3';
+                antenna.style.boxShadow = '0 0 30px rgba(16, 185, 129, 1)';
+            });
+
+            // Create multiple signal waves
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => createSignalWaves(), i * 200);
+            }
+
+            // Boost RSSI temporarily
+            systemData.tags.forEach(tag => {
+                tag.rssi += 5; // Boost signal
+                tag.rssi = Math.min(-30, tag.rssi); // Cap at maximum
+            });
+
+            // Reset after 3 seconds
+            setTimeout(() => {
+                antennas.forEach(antenna => {
+                    antenna.style.animation = '';
+                    antenna.style.boxShadow = '';
+                });
+
+                systemData.tags.forEach(tag => {
+                    tag.rssi -= 5; // Return to normal
+                    tag.rssi = Math.max(-60, tag.rssi); // Cap at minimum
+                });
+
+                updateInventoryTable();
+                updateWarehouseStats();
+            }, 3000);
+
+            updateInventoryTable();
+            updateWarehouseStats();
+            showAlert('success', '⚡ Signal boosted for 3 seconds!');
+        }
+
+        // Toggle signal heatmap
+        function toggleHeatmap() {
+            heatmapEnabled = !heatmapEnabled;
+            const btn = event.target;
+
+            if (heatmapEnabled) {
+                btn.textContent = '🌡️ Hide Heatmap';
+                drawSignalHeatmap();
+            } else {
+                btn.textContent = '🌡️ Signal Heatmap';
+                signalCtx.clearRect(0, 0, signalCanvas.width, signalCanvas.height);
+            }
+        }
+
+        // Draw signal strength heatmap
+        function drawSignalHeatmap() {
+            if (!signalCtx) return;
+
+            signalCtx.clearRect(0, 0, signalCanvas.width, signalCanvas.height);
+
+            const width = signalCanvas.width;
+            const height = signalCanvas.height;
+            const imageData = signalCtx.createImageData(width, height);
+            const data = imageData.data;
+
+            // Calculate signal strength for each pixel
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const pixelIndex = (y * width + x) * 4;
+
+                    // Calculate distance to nearest antenna (simplified)
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                    const maxDistance = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
+
+                    // Signal strength decreases with distance
+                    const strength = Math.max(0, 1 - (distance / maxDistance));
+
+                    // Color based on signal strength
+                    if (strength > 0.7) {
+                        // Strong signal - green
+                        data[pixelIndex] = 16;     // R
+                        data[pixelIndex + 1] = 185; // G
+                        data[pixelIndex + 2] = 129; // B
+                        data[pixelIndex + 3] = strength * 100; // A
+                    } else if (strength > 0.4) {
+                        // Medium signal - yellow
+                        data[pixelIndex] = 245;     // R
+                        data[pixelIndex + 1] = 158; // G
+                        data[pixelIndex + 2] = 11;  // B
+                        data[pixelIndex + 3] = strength * 80; // A
+                    } else {
+                        // Weak signal - red
+                        data[pixelIndex] = 239;     // R
+                        data[pixelIndex + 1] = 68;  // G
+                        data[pixelIndex + 2] = 68;  // B
+                        data[pixelIndex + 3] = strength * 60; // A
+                    }
+                }
+            }
+
+            signalCtx.putImageData(imageData, 0, 0);
+        }
+
+        // Simulate equipment movement
+        function simulateMovement() {
+            const btn = event.target;
+            btn.innerHTML = '<span class="loading-spinner"></span>Simulating...';
+            btn.disabled = true;
+
+            // Move multiple tags with realistic patterns
+            const movingTags = systemData.tags.slice(0, 8); // Move 8 tags
+            let moveCount = 0;
+
+            const moveInterval = setInterval(() => {
+                if (moveCount < 20) { // 20 movement steps
+                    movingTags.forEach(tag => {
+                        // Simulate realistic movement patterns
+                        const movement = 3; // 3% movement per step
+                        tag.x += (Math.random() - 0.5) * movement;
+                        tag.y += (Math.random() - 0.5) * movement;
+
+                        // Keep within bounds
+                        tag.x = Math.max(5, Math.min(95, tag.x));
+                        tag.y = Math.max(5, Math.min(95, tag.y));
+
+                        // Update last seen time
+                        tag.lastSeen = new Date();
+                    });
+
+                    renderWarehouseMap();
+                    updateInventoryTable();
+                    checkGeofenceViolations();
+                    updateWarehouseStats();
+
+                    // Create data transmission for moving tags
+                    if (moveCount % 3 === 0) {
+                        createDataFlowLine();
+                    }
+
+                    moveCount++;
+                } else {
+                    clearInterval(moveInterval);
+                    btn.innerHTML = '🚚 Simulate Movement';
+                    btn.disabled = false;
+                    showAlert('success', '✅ Movement simulation completed');
+                }
+            }, 300);
+        }
+
+        // Update warehouse statistics
+        function updateWarehouseStats() {
+            const totalTags = systemData.tags.length;
+            const activeTags = systemData.tags.filter(tag =>
+                (new Date() - tag.lastSeen) < 30000 // Active in last 30 seconds
+            ).length;
+            const violations = systemData.tags.filter(tag =>
+                tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10
+            ).length;
+            const avgRSSI = Math.round(
+                systemData.tags.reduce((sum, tag) => sum + tag.rssi, 0) / totalTags
+            );
+
+            document.getElementById('totalTags').textContent = totalTags;
+            document.getElementById('activeTags').textContent = activeTags;
+            document.getElementById('violations').textContent = violations;
+            document.getElementById('avgRSSI').textContent = avgRSSI;
+
+            // Update violation indicator color
+            const violationElement = document.getElementById('violations');
+            if (violations > 0) {
+                violationElement.style.color = '#ef4444';
+                violationElement.style.animation = 'pulse 1s infinite';
+            } else {
+                violationElement.style.color = '#60a5fa';
+                violationElement.style.animation = '';
+            }
+        }
+
+        // Voice synthesis
+        function speak(text) {
+            if (voiceEnabled && window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+                utterance.volume = 0.7;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Show achievement
+        function showAchievement(title, description) {
+            if (achievements.includes(title)) return; // Don't show duplicate achievements
+
+            achievements.push(title);
+            const popup = document.getElementById('achievementPopup');
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementDescription').textContent = description;
+
+            popup.classList.add('show');
+
+            // Update performance score
+            performanceScore += 100;
+            document.getElementById('performanceScore').textContent = performanceScore;
+
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+
+            speak(`Achievement unlocked: ${title}`);
+        }
+
+        // Initialize 3D scene
+        function init3DScene() {
+            if (!window.THREE) return;
+
+            const canvas = document.getElementById('threeCanvas');
+            three3DScene = new THREE.Scene();
+            three3DCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            three3DRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+
+            three3DRenderer.setSize(window.innerWidth, window.innerHeight);
+            three3DRenderer.setClearColor(0x000000, 0.8);
+
+            // Add warehouse 3D model
+            create3DWarehouse();
+
+            three3DCamera.position.set(0, 50, 50);
+            three3DCamera.lookAt(0, 0, 0);
+        }
+
+        // Create 3D warehouse
+        function create3DWarehouse() {
+            if (!three3DScene) return;
+
+            // Warehouse floor
+            const floorGeometry = new THREE.PlaneGeometry(100, 100);
+            const floorMaterial = new THREE.MeshBasicMaterial({
+                color: 0x1a1a1a,
+                transparent: true,
+                opacity: 0.8
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            three3DScene.add(floor);
+
+            // Add 3D tags
+            systemData.tags.forEach((tag, index) => {
+                const tagGeometry = new THREE.BoxGeometry(2, 0.5, 2);
+                const tagMaterial = new THREE.MeshBasicMaterial({
+                    color: tag.type === 'metal' ? 0x00d4ff : 0x00ff88
+                });
+                const tagMesh = new THREE.Mesh(tagGeometry, tagMaterial);
+
+                tagMesh.position.x = (tag.x - 50) * 2;
+                tagMesh.position.z = (tag.y - 50) * 2;
+                tagMesh.position.y = 1;
+
+                three3DScene.add(tagMesh);
+            });
+
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            three3DScene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0x00d4ff, 0.8);
+            directionalLight.position.set(50, 50, 50);
+            three3DScene.add(directionalLight);
+        }
+
+        // Toggle 3D view
+        function toggle3DView() {
+            const viz3D = document.getElementById('visualization3D');
+
+            if (viz3D.classList.contains('active')) {
+                close3DView();
+            } else {
+                viz3D.classList.add('active');
+                if (three3DRenderer) {
+                    animate3D();
+                }
+                showAchievement("3D Explorer", "Entered the third dimension!");
+                speak("3D visualization activated");
+            }
+        }
+
+        // Close 3D view
+        function close3DView() {
+            document.getElementById('visualization3D').classList.remove('active');
+        }
+
+        // Reset 3D view
+        function reset3DView() {
+            if (three3DCamera) {
+                three3DCamera.position.set(0, 50, 50);
+                three3DCamera.lookAt(0, 0, 0);
+            }
+        }
+
+        // Animate 3D scene
+        function animate3D() {
+            if (!document.getElementById('visualization3D').classList.contains('active')) return;
+
+            requestAnimationFrame(animate3D);
+
+            if (three3DRenderer && three3DScene && three3DCamera) {
+                // Rotate camera around the scene
+                const time = Date.now() * 0.0005;
+                three3DCamera.position.x = Math.cos(time) * 80;
+                three3DCamera.position.z = Math.sin(time) * 80;
+                three3DCamera.lookAt(0, 0, 0);
+
+                three3DRenderer.render(three3DScene, three3DCamera);
+            }
+        }
+
+        // Setup keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    toggleInnovationPanel();
+                } else if (e.ctrlKey && e.key === '3') {
+                    e.preventDefault();
+                    toggle3DView();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    scanTags();
+                } else if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    changeScenario('emergency');
+                } else if (e.key === 'F1') {
+                    e.preventDefault();
+                    startTutorial();
+                } else if (e.key === '?') {
+                    const shortcuts = document.getElementById('keyboardShortcuts');
+                    shortcuts.classList.toggle('show');
+                } else if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undoPosition();
+                } else if (e.ctrlKey && e.key === 'y') {
+                    e.preventDefault();
+                    redoPosition();
+                } else if (e.ctrlKey && e.key === 'r') {
+                    e.preventDefault();
+                    resetPositions();
+                } else if (e.key === 'g') {
+                    e.preventDefault();
+                    toggleSnapGrid();
+                }
+            });
+        }
+
+        // Start performance monitoring
+        function startPerformanceMonitoring() {
+            setInterval(() => {
+                const now = performance.now();
+                frameCount++;
+
+                if (now - lastTime >= 1000) {
+                    fps = Math.round((frameCount * 1000) / (now - lastTime));
+                    document.getElementById('fpsCounter').textContent = fps;
+
+                    // Simulate latency
+                    const latency = Math.round(Math.random() * 10 + 8);
+                    document.getElementById('latencyCounter').textContent = latency + 'ms';
+
+                    frameCount = 0;
+                    lastTime = now;
+                }
+            }, 100);
+        }
+
+        // Change scenario
+        function changeScenario(scenario) {
+            currentScenario = scenario;
+            document.getElementById('scenarioSelector').value = scenario;
+
+            switch(scenario) {
+                case 'emergency':
+                    // Flash red alerts
+                    document.body.style.animation = 'emergencyFlash 0.5s infinite';
+                    speak("Emergency evacuation protocol activated. All personnel evacuate immediately.");
+                    showAchievement("Emergency Response", "Activated emergency protocol!");
+                    break;
+                case 'audit':
+                    speak("Inventory audit mode activated. Scanning all tags for compliance.");
+                    scanTags();
+                    showAchievement("Auditor", "Initiated inventory audit!");
+                    break;
+                case 'security':
+                    speak("Security breach detected. Initiating lockdown procedures.");
+                    showAchievement("Security Expert", "Handled security breach!");
+                    break;
+                default:
+                    document.body.style.animation = '';
+                    speak("Normal operations resumed.");
+            }
+        }
+
+        // Toggle voice alerts
+        function toggleVoiceAlerts() {
+            voiceEnabled = !voiceEnabled;
+            const btn = event.target;
+            btn.textContent = voiceEnabled ? '🔊 Voice ON' : '🔇 Voice OFF';
+            speak(voiceEnabled ? "Voice alerts enabled" : "Voice alerts disabled");
+        }
+
+        // Toggle sound effects
+        function toggleSoundEffects() {
+            soundEnabled = !soundEnabled;
+            const btn = event.target;
+            btn.textContent = soundEnabled ? '🎶 SFX ON' : '🔇 SFX OFF';
+            if (soundEnabled) {
+                showAchievement("Audio Master", "Enabled immersive sound effects!");
+            }
+        }
+
+        // Start tutorial
+        function startTutorial() {
+            tutorialActive = true;
+            tutorialStep = 0;
+            document.getElementById('tutorialOverlay').classList.add('active');
+            updateTutorialStep();
+            showAchievement("Student", "Started the interactive tutorial!");
+        }
+
+        // Update tutorial step
+        function updateTutorialStep() {
+            const step = tutorialSteps[tutorialStep];
+            document.getElementById('tutorialStepTitle').textContent = step.title;
+            document.getElementById('tutorialStepContent').textContent = step.content;
+            document.getElementById('tutorialProgress').textContent = `${tutorialStep + 1} / ${tutorialSteps.length}`;
+            speak(step.title);
+        }
+
+        // Next tutorial step
+        function nextTutorialStep() {
+            if (tutorialStep < tutorialSteps.length - 1) {
+                tutorialStep++;
+                updateTutorialStep();
+            } else {
+                closeTutorial();
+                showAchievement("Graduate", "Completed the tutorial! You're now a master!");
+            }
+        }
+
+        // Previous tutorial step
+        function previousTutorialStep() {
+            if (tutorialStep > 0) {
+                tutorialStep--;
+                updateTutorialStep();
+            }
+        }
+
+        // Close tutorial
+        function closeTutorial() {
+            tutorialActive = false;
+            document.getElementById('tutorialOverlay').classList.remove('active');
+        }
+
+        // Show predictive analytics
+        function showPredictiveAnalytics() {
+            const predictions = [
+                "Tag XER001 will likely move to Zone 2-3 in the next 10 minutes",
+                "Peak activity expected between 2-4 PM based on historical data",
+                "Recommend increasing RF power by 2 dBm for optimal coverage",
+                "Potential interference detected in the 915 MHz band"
+            ];
+
+            const randomPrediction = predictions[Math.floor(Math.random() * predictions.length)];
+            showAlert('success', `🔮 AI Prediction: ${randomPrediction}`);
+            speak(`Predictive analytics: ${randomPrediction}`);
+            showAchievement("Fortune Teller", "Used AI-powered predictive analytics!");
+        }
+
+        // Export advanced report
+        function exportAdvancedReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                theme: currentTheme,
+                scenario: currentScenario,
+                performance: {
+                    fps: fps,
+                    score: performanceScore,
+                    achievements: achievements.length
+                },
+                tags: systemData.tags.length,
+                violations: systemData.tags.filter(tag =>
+                    tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10
+                ).length,
+                avgRSSI: Math.round(
+                    systemData.tags.reduce((sum, tag) => sum + tag.rssi, 0) / systemData.tags.length
+                )
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rfid_advanced_report_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showAchievement("Data Scientist", "Exported advanced analytics report!");
+            speak("Advanced report exported successfully");
+        }
+
+        // Toggle AR mode (simulated)
+        function toggleARMode() {
+            arMode = !arMode;
+            const btn = event.target;
+
+            if (arMode) {
+                btn.textContent = '🥽 AR ON';
+                document.body.style.filter = 'hue-rotate(30deg) saturate(1.5)';
+                showAchievement("AR Pioneer", "Entered augmented reality mode!");
+                speak("Augmented reality mode activated");
+            } else {
+                btn.textContent = '🥽 AR Mode';
+                document.body.style.filter = '';
+                speak("Augmented reality mode deactivated");
+            }
+        }
+
+        // Initialize drag and drop functionality
+        function initializeDragAndDrop() {
+            // Store original positions
+            storeOriginalPositions();
+
+            // Make material cards draggable
+            initializeMaterialDragDrop();
+
+            // Make warehouse tags draggable
+            initializeWarehouseDragDrop();
+
+            // Setup global drag event listeners
+            setupGlobalDragListeners();
+
+            // Show position controls
+            document.getElementById('positionControls').classList.add('active');
+
+            showAchievement("Drag Master", "Drag and drop functionality enabled!");
+        }
+
+        // Store original positions for reset functionality
+        function storeOriginalPositions() {
+            // Store material card positions
+            const materialCards = document.querySelectorAll('.material-card');
+            originalPositions.materials = Array.from(materialCards).map((card, index) => ({
+                element: card,
+                index: index,
+                parent: card.parentNode
+            }));
+
+            // Store tag positions
+            originalPositions.tags = systemData.tags.map(tag => ({
+                id: tag.id,
+                x: tag.x,
+                y: tag.y
+            }));
+        }
+
+        // Initialize material cards drag and drop
+        function initializeMaterialDragDrop() {
+            const materialCards = document.querySelectorAll('.material-card');
+
+            materialCards.forEach(card => {
+                // Add draggable class and indicator
+                card.classList.add('draggable');
+                card.draggable = true;
+
+                // Add draggable indicator
+                const indicator = document.createElement('div');
+                indicator.className = 'draggable-indicator';
+                indicator.innerHTML = '⋮⋮';
+                card.appendChild(indicator);
+
+                // Add drag event listeners
+                card.addEventListener('dragstart', handleMaterialDragStart);
+                card.addEventListener('dragend', handleMaterialDragEnd);
+            });
+
+            // Make materials grid a drop zone
+            const materialsGrid = document.querySelector('.materials-grid');
+            materialsGrid.classList.add('drop-zone');
+            materialsGrid.addEventListener('dragover', handleDragOver);
+            materialsGrid.addEventListener('drop', handleMaterialDrop);
+        }
+
+        // Initialize warehouse tags drag and drop
+        function initializeWarehouseDragDrop() {
+            // This will be called when tags are rendered
+            // We'll add the event listeners in renderWarehouseMap function
+        }
+
+        // Setup global drag event listeners
+        function setupGlobalDragListeners() {
+            document.addEventListener('dragover', (e) => e.preventDefault());
+            document.addEventListener('drop', (e) => e.preventDefault());
+
+            // Mouse events for warehouse tags (since they use mouse events, not HTML5 drag)
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+
+            // Touch events for mobile support
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+        }
+
+        // Material card drag start
+        function handleMaterialDragStart(e) {
+            dragElement = e.target;
+            dragType = 'material';
+
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.outerHTML);
+
+            // Create drag preview
+            const preview = e.target.cloneNode(true);
+            preview.classList.add('drag-preview');
+            document.body.appendChild(preview);
+            e.dataTransfer.setDragImage(preview, e.offsetX, e.offsetY);
+
+            setTimeout(() => document.body.removeChild(preview), 0);
+        }
+
+        // Material card drag end
+        function handleMaterialDragEnd(e) {
+            e.target.classList.remove('dragging');
+            dragElement = null;
+            dragType = null;
+
+            // Remove drag over effects from all drop zones
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over');
+            });
+        }
+
+        // Handle drag over
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            if (!e.currentTarget.classList.contains('drag-over')) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        // Handle material drop
+        function handleMaterialDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (dragType !== 'material' || !dragElement) return;
+
+            // Find the closest material card to drop position
+            const afterElement = getDragAfterElement(e.currentTarget, e.clientY);
+
+            if (afterElement == null) {
+                e.currentTarget.appendChild(dragElement);
+            } else {
+                e.currentTarget.insertBefore(dragElement, afterElement);
+            }
+
+            // Save position change to history
+            savePositionState('material', 'reorder');
+
+            showAlert('success', '📦 Material card repositioned successfully!');
+            speak("Material card repositioned");
+        }
+
+        // Get element after drag position
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Handle warehouse tag mouse down (start drag)
+        function handleTagMouseDown(e, tagId) {
+            e.preventDefault();
+
+            const tag = systemData.tags.find(t => t.id === tagId);
+            if (!tag) return;
+
+            isDragging = true;
+            dragElement = e.target;
+            dragType = 'tag';
+
+            const rect = document.getElementById('warehouseMap').getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left - (tag.x * rect.width / 100);
+            dragOffset.y = e.clientY - rect.top - (tag.y * rect.height / 100);
+
+            e.target.classList.add('dragging');
+
+            // Show snap grid if enabled
+            if (snapGridEnabled) {
+                document.getElementById('snapGrid').classList.add('active');
+            }
+
+            // Create data transmission effect
+            createDataFlowLine();
+        }
+
+        // Handle mouse move (for warehouse tags)
+        function handleMouseMove(e) {
+            if (!isDragging || dragType !== 'tag' || !dragElement) return;
+
+            const warehouseMap = document.getElementById('warehouseMap');
+            const rect = warehouseMap.getBoundingClientRect();
+
+            let x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+            let y = ((e.clientY - rect.top - dragOffset.y) / rect.height) * 100;
+
+            // Snap to grid if enabled
+            if (snapGridEnabled) {
+                x = Math.round(x / 5) * 5; // 5% grid
+                y = Math.round(y / 5) * 5;
+            }
+
+            // Keep within bounds
+            x = Math.max(0, Math.min(100, x));
+            y = Math.max(0, Math.min(100, y));
+
+            // Update tag position
+            const tagId = dragElement.dataset.tagId;
+            const tag = systemData.tags.find(t => t.id === tagId);
+            if (tag) {
+                tag.x = x;
+                tag.y = y;
+
+                // Update visual position
+                dragElement.style.left = x + '%';
+                dragElement.style.top = y + '%';
+
+                // Update RSSI based on new position
+                updateTagRSSI(tag);
+            }
+        }
+
+        // Handle mouse up (end drag)
+        function handleMouseUp(e) {
+            if (!isDragging || dragType !== 'tag') return;
+
+            isDragging = false;
+
+            if (dragElement) {
+                dragElement.classList.remove('dragging');
+
+                const tagId = dragElement.dataset.tagId;
+                const tag = systemData.tags.find(t => t.id === tagId);
+
+                if (tag) {
+                    // Save position change to history
+                    savePositionState('tag', tagId);
+
+                    // Update displays
+                    updateInventoryTable();
+                    updateWarehouseStats();
+                    checkGeofenceViolations();
+
+                    // Create data transmission effect
+                    setTimeout(() => createDataFlowLine(), 200);
+
+                    showAlert('success', `📍 ${tag.id} moved to new position (${Math.round(tag.x)}%, ${Math.round(tag.y)}%)`);
+                    speak(`Tag ${tag.id} repositioned`);
+                }
+            }
+
+            // Hide snap grid
+            document.getElementById('snapGrid').classList.remove('active');
+
+            dragElement = null;
+            dragType = null;
+        }
+
+        // Handle touch move (mobile support)
+        function handleTouchMove(e) {
+            if (!isDragging || dragType !== 'tag') return;
+
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent('mousemove', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            handleMouseMove(mouseEvent);
+        }
+
+        // Handle touch end (mobile support)
+        function handleTouchEnd(e) {
+            if (!isDragging || dragType !== 'tag') return;
+
+            e.preventDefault();
+            const mouseEvent = new MouseEvent('mouseup', {
+                clientX: 0,
+                clientY: 0
+            });
+            handleMouseUp(mouseEvent);
+        }
+
+        // Update tag RSSI based on position relative to antennas
+        function updateTagRSSI(tag) {
+            // Simulate RSSI calculation based on distance from center (where antennas are)
+            const centerX = 50;
+            const centerY = 50;
+            const distance = Math.sqrt(Math.pow(tag.x - centerX, 2) + Math.pow(tag.y - centerY, 2));
+
+            // RSSI decreases with distance (simplified model)
+            const maxDistance = Math.sqrt(2 * Math.pow(50, 2)); // Corner to center
+            const normalizedDistance = distance / maxDistance;
+
+            // RSSI range: -30 dBm (close) to -60 dBm (far)
+            tag.rssi = Math.round(-30 - (normalizedDistance * 30));
+            tag.lastSeen = new Date();
+        }
+
+        // Save position state for undo/redo
+        function savePositionState(type, identifier) {
+            const state = {
+                type: type,
+                identifier: identifier,
+                timestamp: Date.now(),
+                positions: type === 'material' ?
+                    getCurrentMaterialOrder() :
+                    systemData.tags.map(tag => ({ id: tag.id, x: tag.x, y: tag.y }))
+            };
+
+            // Remove any states after current index (for redo)
+            positionHistory = positionHistory.slice(0, positionHistoryIndex + 1);
+
+            // Add new state
+            positionHistory.push(state);
+            positionHistoryIndex++;
+
+            // Limit history size
+            if (positionHistory.length > 50) {
+                positionHistory.shift();
+                positionHistoryIndex--;
+            }
+
+            // Update undo/redo buttons
+            updateUndoRedoButtons();
+        }
+
+        // Get current material card order
+        function getCurrentMaterialOrder() {
+            const materialsGrid = document.querySelector('.materials-grid');
+            return Array.from(materialsGrid.children).map((card, index) => ({
+                element: card,
+                index: index
+            }));
+        }
+
+        // Update undo/redo button states
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+
+            undoBtn.disabled = positionHistoryIndex < 0;
+            redoBtn.disabled = positionHistoryIndex >= positionHistory.length - 1;
+        }
+
+        // Undo last position change
+        function undoPosition() {
+            if (positionHistoryIndex < 0) return;
+
+            const state = positionHistory[positionHistoryIndex];
+            positionHistoryIndex--;
+
+            if (state.type === 'material') {
+                // Restore material order (implementation depends on specific needs)
+                showAlert('info', '↶ Material position undone');
+            } else if (state.type === 'tag') {
+                // Restore tag position
+                const previousState = positionHistoryIndex >= 0 ? positionHistory[positionHistoryIndex] : null;
+                if (previousState) {
+                    const tagPos = previousState.positions.find(p => p.id === state.identifier);
+                    if (tagPos) {
+                        const tag = systemData.tags.find(t => t.id === state.identifier);
+                        if (tag) {
+                            tag.x = tagPos.x;
+                            tag.y = tagPos.y;
+                            updateTagRSSI(tag);
+                        }
+                    }
+                }
+
+                renderWarehouseMap();
+                updateInventoryTable();
+                updateWarehouseStats();
+                checkGeofenceViolations();
+                showAlert('info', `↶ ${state.identifier} position undone`);
+            }
+
+            updateUndoRedoButtons();
+            speak("Position change undone");
+        }
+
+        // Redo position change
+        function redoPosition() {
+            if (positionHistoryIndex >= positionHistory.length - 1) return;
+
+            positionHistoryIndex++;
+            const state = positionHistory[positionHistoryIndex];
+
+            if (state.type === 'material') {
+                showAlert('info', '↷ Material position redone');
+            } else if (state.type === 'tag') {
+                const tagPos = state.positions.find(p => p.id === state.identifier);
+                if (tagPos) {
+                    const tag = systemData.tags.find(t => t.id === state.identifier);
+                    if (tag) {
+                        tag.x = tagPos.x;
+                        tag.y = tagPos.y;
+                        updateTagRSSI(tag);
+                    }
+                }
+
+                renderWarehouseMap();
+                updateInventoryTable();
+                updateWarehouseStats();
+                checkGeofenceViolations();
+                showAlert('info', `↷ ${state.identifier} position redone`);
+            }
+
+            updateUndoRedoButtons();
+            speak("Position change redone");
+        }
+
+        // Reset all positions to original
+        function resetPositions() {
+            // Reset material cards
+            const materialsGrid = document.querySelector('.materials-grid');
+            originalPositions.materials.forEach(item => {
+                materialsGrid.appendChild(item.element);
+            });
+
+            // Reset tag positions
+            originalPositions.tags.forEach(originalTag => {
+                const tag = systemData.tags.find(t => t.id === originalTag.id);
+                if (tag) {
+                    tag.x = originalTag.x;
+                    tag.y = originalTag.y;
+                    updateTagRSSI(tag);
+                }
+            });
+
+            // Clear history
+            positionHistory = [];
+            positionHistoryIndex = -1;
+            updateUndoRedoButtons();
+
+            // Update displays
+            renderWarehouseMap();
+            updateInventoryTable();
+            updateWarehouseStats();
+            checkGeofenceViolations();
+
+            showAlert('success', '🔄 All positions reset to original layout');
+            speak("All positions reset");
+            showAchievement("Reset Master", "Reset all positions to original layout!");
+        }
+
+        // Toggle snap grid
+        function toggleSnapGrid() {
+            snapGridEnabled = !snapGridEnabled;
+            const btn = event.target;
+
+            if (snapGridEnabled) {
+                btn.style.background = 'var(--primary-blue)';
+                btn.style.color = 'white';
+                showAlert('info', '⊞ Snap to grid enabled (5% increments)');
+                speak("Snap to grid enabled");
+            } else {
+                btn.style.background = '';
+                btn.style.color = '';
+                document.getElementById('snapGrid').classList.remove('active');
+                showAlert('info', '⊞ Snap to grid disabled');
+                speak("Snap to grid disabled");
+            }
+        }
+
+        // Add emergency flash animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes emergencyFlash {
+                0%, 100% { filter: brightness(1); }
+                50% { filter: brightness(1.5) hue-rotate(0deg) sepia(1) saturate(2) contrast(1.2); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

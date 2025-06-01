@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive UHF RFID Warehouse System Simulation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary-blue: #2563eb;
+            --primary-green: #059669;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-white: #ffffff;
+            --bg-gray-50: #f9fafb;
+            --bg-gray-100: #f3f4f6;
+            --border-gray: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-white);
+            min-height: 100vh;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        /* Header Styles */
+        .header {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .system-status {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning-color);
+        }
+
+        .status-indicator.danger {
+            background: var(--danger-color);
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-gray);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        /* Data Transmission Network */
+        .network-diagram {
+            position: relative;
+            height: 400px;
+            background: var(--bg-gray-50);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .network-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .network-node:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .node-cm4 {
+            background: var(--primary-blue);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-r420 {
+            background: var(--warning-color);
+            top: 30%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-antenna {
+            background: var(--success-color);
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .node-antenna-1 { top: 10%; left: 20%; }
+        .node-antenna-2 { top: 10%; right: 20%; }
+        .node-antenna-3 { bottom: 10%; left: 20%; }
+        .node-antenna-4 { bottom: 10%; right: 20%; }
+
+        .node-poe {
+            background: var(--text-secondary);
+            top: 70%;
+            left: 70%;
+            transform: translate(-50%, -50%);
+        }
+
+        .node-power {
+            background: var(--danger-color);
+            bottom: 20%;
+            right: 10%;
+        }
+
+        .node-ui {
+            background: var(--primary-green);
+            top: 20%;
+            right: 10%;
+        }
+
+        .data-flow-line {
+            position: absolute;
+            height: 3px;
+            background: var(--success-color);
+            opacity: 0;
+            animation: dataFlow 2s infinite;
+        }
+
+        .data-flow-line.write {
+            background: var(--warning-color);
+        }
+
+        @keyframes dataFlow {
+            0% { opacity: 0; transform: scaleX(0); }
+            50% { opacity: 1; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(1); }
+        }
+
+        /* Tag Inventory Table */
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .inventory-table th {
+            background: var(--bg-gray-50);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .inventory-table td {
+            font-size: 0.875rem;
+        }
+
+        .rssi-indicator {
+            display: inline-block;
+            width: 60px;
+            height: 8px;
+            background: var(--bg-gray-100);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .rssi-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .rssi-strong { background: var(--success-color); }
+        .rssi-medium { background: var(--warning-color); }
+        .rssi-weak { background: var(--danger-color); }
+
+        /* Warehouse Map */
+        .warehouse-map {
+            position: relative;
+            height: 500px;
+            background: var(--bg-gray-50);
+            border: 2px solid var(--border-gray);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        .map-boundary {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            border: 3px dashed var(--warning-color);
+            border-radius: 0.5rem;
+        }
+
+        .map-tag {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .map-tag:hover {
+            transform: scale(1.5);
+        }
+
+        .map-tag.metal { background: var(--primary-blue); }
+        .map-tag.non-metal { background: var(--success-color); }
+        .map-tag.violation { background: var(--danger-color); animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border-gray);
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--bg-gray-50);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        .power-slider {
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        .power-value {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            border-color: var(--success-color);
+            color: #166534;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            border-color: var(--warning-color);
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: var(--danger-color);
+            color: #991b1b;
+        }
+
+        /* Node Details Modal */
+        .node-details {
+            position: absolute;
+            background: white;
+            border: 1px solid var(--border-gray);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            min-width: 200px;
+            display: none;
+        }
+
+        .node-details.show {
+            display: block;
+        }
+
+        .node-details h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .node-details p {
+            margin: 0.25rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .system-status {
+                justify-content: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .network-node {
+                width: 50px;
+                height: 50px;
+                font-size: 1.25rem;
+            }
+
+            .node-antenna {
+                width: 35px;
+                height: 35px;
+                font-size: 0.875rem;
+            }
+
+            .warehouse-map {
+                height: 300px;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .w-full { width: 100%; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>🏭 UHF RFID Warehouse System Simulation</h1>
+            <div class="system-status">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>R420 Connected</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>4 Antennas Active</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span id="uptime">CM4 Uptime: 72h 15m</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <!-- Data Transmission Network -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📡 Data Transmission Network</h2>
+                </div>
+                <div class="network-diagram" id="networkDiagram">
+                    <!-- Network Nodes -->
+                    <div class="network-node node-cm4" data-node="cm4" title="Raspberry Pi CM4">
+                        🖥️
+                    </div>
+                    <div class="network-node node-r420" data-node="r420" title="Impinj Speedway R420">
+                        📡
+                    </div>
+                    <div class="network-node node-antenna node-antenna-1" data-node="antenna1" title="Laird S9028PCL #1">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-2" data-node="antenna2" title="Laird S9028PCL #2">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-3" data-node="antenna3" title="Laird S9028PCL #3">
+                        📶
+                    </div>
+                    <div class="network-node node-antenna node-antenna-4" data-node="antenna4" title="Laird S9028PCL #4">
+                        📶
+                    </div>
+                    <div class="network-node node-poe" data-node="poe" title="NETGEAR GS308PP PoE Switch">
+                        🔌
+                    </div>
+                    <div class="network-node node-power" data-node="power" title="Anker 5V/3A Power Supply">
+                        ⚡
+                    </div>
+                    <div class="network-node node-ui" data-node="ui" title="Web UI">
+                        💻
+                    </div>
+
+                    <!-- Node Details Modal -->
+                    <div class="node-details" id="nodeDetails">
+                        <h4 id="nodeTitle"></h4>
+                        <p id="nodeDescription"></p>
+                        <p id="nodeSpecs"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tag Inventory -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📋 Tag Inventory</h2>
+                    <button class="btn btn-primary" onclick="scanTags()">
+                        🔍 Scan Tags
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Tag ID</th>
+                                <th>Data</th>
+                                <th>RSSI</th>
+                                <th>Last Seen</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Dynamic content will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Read/Write Controls -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚙️ Read/Write Controls</h2>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Select Tag</label>
+                        <select class="form-select" id="selectedTag">
+                            <option value="">Choose a tag...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Write Data</label>
+                        <input type="text" class="form-input" id="writeData" placeholder="e.g., EQUIP1234">
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button class="btn btn-success" onclick="writeTag()">
+                        ✏️ Write Data
+                    </button>
+                    <button class="btn btn-primary" onclick="readTag()">
+                        📖 Read Tag
+                    </button>
+                </div>
+                <div id="operationResult" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Warehouse Geofencing Map -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🗺️ Warehouse Geofencing Map (50m × 50m)</h2>
+                </div>
+                <div class="warehouse-map" id="warehouseMap">
+                    <div class="map-grid"></div>
+                    <div class="map-boundary" title="45m Geofence Boundary"></div>
+                    <!-- Tags will be dynamically positioned here -->
+                </div>
+                <div class="flex items-center gap-4 mt-2">
+                    <div class="flex items-center gap-2">
+                        <div style="width: 12px; height: 12px; background: var(--primary-blue); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem;">Metal Tags (Xerafy)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div style="width: 12px; height: 12px; background: var(--success-color); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem;">Non-Metal Tags (Avery)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div style="width: 12px; height: 12px; background: var(--danger-color); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem;">Boundary Violations</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">⚙️ System Settings</h2>
+                </div>
+                <div class="settings-panel">
+                    <div class="form-group">
+                        <label class="form-label">RF Power Level</label>
+                        <input type="range" class="power-slider" id="powerSlider" min="0" max="30" value="27" oninput="updatePower(this.value)">
+                        <div class="text-center">
+                            <span class="power-value" id="powerValue">27 dBm</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Antenna Read Order</label>
+                        <select class="form-select" id="antennaOrder">
+                            <option value="sequential">Sequential (1→2→3→4)</option>
+                            <option value="parallel">Parallel (All)</option>
+                            <option value="custom">Custom Order</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-warning w-full" onclick="exportCSV()">
+                            📊 Export CSV Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🚨 System Alerts</h2>
+                </div>
+                <div id="alertsContainer">
+                    <!-- Dynamic alerts will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // System Data
+        const systemData = {
+            tags: [
+                // Metal tags (Xerafy Dot XS)
+                { id: 'XER001', type: 'metal', data: 'DRILL001', rssi: -45, x: 20, y: 30, lastSeen: new Date() },
+                { id: 'XER002', type: 'metal', data: 'WELDER002', rssi: -52, x: 35, y: 25, lastSeen: new Date() },
+                { id: 'XER003', type: 'metal', data: 'CRANE003', rssi: -38, x: 60, y: 40, lastSeen: new Date() },
+                { id: 'XER004', type: 'metal', data: 'FORKLIFT004', rssi: -41, x: 15, y: 60, lastSeen: new Date() },
+                { id: 'XER005', type: 'metal', data: 'COMPRESSOR005', rssi: -48, x: 70, y: 20, lastSeen: new Date() },
+                { id: 'XER006', type: 'metal', data: 'GENERATOR006', rssi: -55, x: 25, y: 75, lastSeen: new Date() },
+                { id: 'XER007', type: 'metal', data: 'PUMP007', rssi: -43, x: 80, y: 60, lastSeen: new Date() },
+                { id: 'XER008', type: 'metal', data: 'MOTOR008', rssi: -50, x: 45, y: 15, lastSeen: new Date() },
+                { id: 'XER009', type: 'metal', data: 'VALVE009', rssi: -46, x: 55, y: 70, lastSeen: new Date() },
+                { id: 'XER010', type: 'metal', data: 'TANK010', rssi: -39, x: 30, y: 50, lastSeen: new Date() },
+                { id: 'XER011', type: 'metal', data: 'CONVEYOR011', rssi: -53, x: 75, y: 35, lastSeen: new Date() },
+                { id: 'XER012', type: 'metal', data: 'PRESS012', rssi: -44, x: 40, y: 80, lastSeen: new Date() },
+                { id: 'XER013', type: 'metal', data: 'LATHE013', rssi: -47, x: 65, y: 25, lastSeen: new Date() },
+                { id: 'XER014', type: 'metal', data: 'MILL014', rssi: -51, x: 20, y: 45, lastSeen: new Date() },
+                { id: 'XER015', type: 'metal', data: 'SAW015', rssi: -42, x: 85, y: 50, lastSeen: new Date() },
+                { id: 'XER016', type: 'metal', data: 'GRINDER016', rssi: -49, x: 50, y: 35, lastSeen: new Date() },
+                { id: 'XER017', type: 'metal', data: 'ROBOT017', rssi: -40, x: 30, y: 65, lastSeen: new Date() },
+                { id: 'XER018', type: 'metal', data: 'HOIST018', rssi: -54, x: 70, y: 75, lastSeen: new Date() },
+                { id: 'XER019', type: 'metal', data: 'JACK019', rssi: -45, x: 15, y: 35, lastSeen: new Date() },
+                { id: 'XER020', type: 'metal', data: 'WINCH020', rssi: -48, x: 60, y: 55, lastSeen: new Date() },
+
+                // Non-metal tags (Avery Dennison AD-160u7)
+                { id: 'AVE001', type: 'non-metal', data: 'PALLET001', rssi: -35, x: 25, y: 20, lastSeen: new Date() },
+                { id: 'AVE002', type: 'non-metal', data: 'CONTAINER002', rssi: -42, x: 45, y: 60, lastSeen: new Date() },
+                { id: 'AVE003', type: 'non-metal', data: 'BOX003', rssi: -38, x: 65, y: 30, lastSeen: new Date() },
+                { id: 'AVE004', type: 'non-metal', data: 'CRATE004', rssi: -44, x: 35, y: 70, lastSeen: new Date() },
+                { id: 'AVE005', type: 'non-metal', data: 'BARREL005', rssi: -40, x: 55, y: 45, lastSeen: new Date() },
+                { id: 'AVE006', type: 'non-metal', data: 'RACK006', rssi: -46, x: 75, y: 65, lastSeen: new Date() },
+                { id: 'AVE007', type: 'non-metal', data: 'SHELF007', rssi: -36, x: 20, y: 55, lastSeen: new Date() },
+                { id: 'AVE008', type: 'non-metal', data: 'CART008', rssi: -43, x: 80, y: 40, lastSeen: new Date() },
+                { id: 'AVE009', type: 'non-metal', data: 'TROLLEY009', rssi: -41, x: 40, y: 25, lastSeen: new Date() },
+                { id: 'AVE010', type: 'non-metal', data: 'PLATFORM010', rssi: -39, x: 50, y: 75, lastSeen: new Date() }
+            ],
+            nodeDetails: {
+                cm4: {
+                    title: 'Raspberry Pi CM4',
+                    description: 'Central processing unit with 4GB RAM, 32GB eMMC',
+                    specs: 'ARM Cortex-A72 quad-core, WiFi, Bluetooth, GPIO'
+                },
+                r420: {
+                    title: 'Impinj Speedway R420',
+                    description: 'UHF RFID reader with 4 antenna ports',
+                    specs: '902-928 MHz, 50m range, PoE powered, 30 dBm max power'
+                },
+                antenna1: {
+                    title: 'Laird S9028PCL Antenna #1',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna2: {
+                    title: 'Laird S9028PCL Antenna #2',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna3: {
+                    title: 'Laird S9028PCL Antenna #3',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                antenna4: {
+                    title: 'Laird S9028PCL Antenna #4',
+                    description: 'Circular polarized antenna (8 dBi gain)',
+                    specs: '902-928 MHz, IP67 rated, 50m effective range'
+                },
+                poe: {
+                    title: 'NETGEAR GS308PP PoE Switch',
+                    description: '8-port Gigabit PoE+ switch',
+                    specs: '120W PoE budget, fanless, auto-sensing'
+                },
+                power: {
+                    title: 'Anker 5V/3A Power Supply',
+                    description: 'External power adapter for PoE switch',
+                    specs: '15W output, universal input, compact design'
+                },
+                ui: {
+                    title: 'Web User Interface',
+                    description: 'Browser-based control interface',
+                    specs: 'Real-time monitoring, responsive design, mobile compatible'
+                }
+            }
+        };
+
+        let currentPower = 27;
+        let isScanning = false;
+        let dataFlowInterval;
+
+        // Initialize the simulation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSimulation();
+            startDataFlowAnimation();
+            updateInventoryTable();
+            renderWarehouseMap();
+            updateUptime();
+
+            // Update uptime every minute
+            setInterval(updateUptime, 60000);
+        });
+
+        // Initialize simulation
+        function initializeSimulation() {
+            // Add click handlers for network nodes
+            document.querySelectorAll('.network-node').forEach(node => {
+                node.addEventListener('click', showNodeDetails);
+            });
+
+            // Populate tag dropdown
+            const tagSelect = document.getElementById('selectedTag');
+            systemData.tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.id;
+                option.textContent = `${tag.id} (${tag.data})`;
+                tagSelect.appendChild(option);
+            });
+
+            // Initialize alerts
+            checkGeofenceViolations();
+        }
+
+        // Show node details on click
+        function showNodeDetails(event) {
+            const nodeType = event.target.dataset.node;
+            const details = systemData.nodeDetails[nodeType];
+
+            if (details) {
+                const detailsEl = document.getElementById('nodeDetails');
+                document.getElementById('nodeTitle').textContent = details.title;
+                document.getElementById('nodeDescription').textContent = details.description;
+                document.getElementById('nodeSpecs').textContent = details.specs;
+
+                detailsEl.style.left = event.pageX + 10 + 'px';
+                detailsEl.style.top = event.pageY + 10 + 'px';
+                detailsEl.classList.add('show');
+
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    detailsEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // Start data flow animation
+        function startDataFlowAnimation() {
+            dataFlowInterval = setInterval(() => {
+                createDataFlowLine();
+            }, 2000);
+        }
+
+        // Create animated data flow lines
+        function createDataFlowLine() {
+            const diagram = document.getElementById('networkDiagram');
+            const line = document.createElement('div');
+            line.className = 'data-flow-line';
+
+            // Random flow direction
+            const isWrite = Math.random() > 0.7;
+            if (isWrite) line.classList.add('write');
+
+            // Position line between random nodes
+            const startX = Math.random() * 300 + 50;
+            const startY = Math.random() * 300 + 50;
+            const endX = Math.random() * 300 + 50;
+            const endY = Math.random() * 300 + 50;
+
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+            line.style.left = startX + 'px';
+            line.style.top = startY + 'px';
+            line.style.width = length + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 50%';
+
+            diagram.appendChild(line);
+
+            // Remove line after animation
+            setTimeout(() => {
+                if (line.parentNode) {
+                    line.parentNode.removeChild(line);
+                }
+            }, 2000);
+        }
+
+        // Update inventory table
+        function updateInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            systemData.tags.forEach(tag => {
+                const row = document.createElement('tr');
+
+                // Calculate RSSI strength
+                let rssiClass = 'rssi-weak';
+                let rssiWidth = '20%';
+                if (tag.rssi > -40) {
+                    rssiClass = 'rssi-strong';
+                    rssiWidth = '80%';
+                } else if (tag.rssi > -50) {
+                    rssiClass = 'rssi-medium';
+                    rssiWidth = '60%';
+                }
+
+                // Calculate location based on coordinates
+                const location = `Zone ${Math.ceil(tag.x / 25)}-${Math.ceil(tag.y / 25)}`;
+
+                row.innerHTML = `
+                    <td>${tag.id}</td>
+                    <td>${tag.data}</td>
+                    <td>
+                        <div class="rssi-indicator">
+                            <div class="rssi-bar ${rssiClass}" style="width: ${rssiWidth}"></div>
+                        </div>
+                        ${tag.rssi} dBm
+                    </td>
+                    <td>${tag.lastSeen.toLocaleTimeString()}</td>
+                    <td>${location}</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Render warehouse map with tags
+        function renderWarehouseMap() {
+            const map = document.getElementById('warehouseMap');
+
+            // Clear existing tags
+            const existingTags = map.querySelectorAll('.map-tag');
+            existingTags.forEach(tag => tag.remove());
+
+            systemData.tags.forEach(tag => {
+                const tagEl = document.createElement('div');
+                tagEl.className = `map-tag ${tag.type}`;
+                tagEl.style.left = tag.x + '%';
+                tagEl.style.top = tag.y + '%';
+                tagEl.title = `${tag.id}: ${tag.data} (${tag.rssi} dBm)`;
+
+                // Check for boundary violations (45m = 90% of 50m)
+                if (tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10) {
+                    tagEl.classList.add('violation');
+                }
+
+                map.appendChild(tagEl);
+            });
+        }
+
+        // Check for geofence violations
+        function checkGeofenceViolations() {
+            const violations = systemData.tags.filter(tag =>
+                tag.x > 90 || tag.y > 90 || tag.x < 10 || tag.y < 10
+            );
+
+            const alertsContainer = document.getElementById('alertsContainer');
+            alertsContainer.innerHTML = '';
+
+            if (violations.length > 0) {
+                violations.forEach(tag => {
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-danger';
+                    alert.innerHTML = `
+                        <strong>Geofence Violation!</strong><br>
+                        Tag ${tag.id} (${tag.data}) is outside the 45m boundary.
+                        <br><small>Current RSSI: ${tag.rssi} dBm</small>
+                    `;
+                    alertsContainer.appendChild(alert);
+                });
+            } else {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.innerHTML = '<strong>All Clear!</strong><br>All tags are within the geofence boundary.';
+                alertsContainer.appendChild(alert);
+            }
+        }
+
+        // Scan tags function
+        function scanTags() {
+            isScanning = true;
+            const btn = event.target;
+            btn.textContent = '🔄 Scanning...';
+            btn.disabled = true;
+
+            // Simulate scanning delay
+            setTimeout(() => {
+                // Update last seen times
+                systemData.tags.forEach(tag => {
+                    tag.lastSeen = new Date();
+                    // Simulate RSSI variations
+                    tag.rssi += Math.random() * 6 - 3; // ±3 dBm variation
+                    tag.rssi = Math.max(-60, Math.min(-30, tag.rssi)); // Keep in realistic range
+                });
+
+                updateInventoryTable();
+                renderWarehouseMap();
+                checkGeofenceViolations();
+
+                btn.textContent = '🔍 Scan Tags';
+                btn.disabled = false;
+                isScanning = false;
+
+                // Show success message
+                showAlert('success', `Successfully scanned ${systemData.tags.length} tags`);
+            }, 2000);
+        }
+
+        // Read tag function
+        function readTag() {
+            const selectedTagId = document.getElementById('selectedTag').value;
+            if (!selectedTagId) {
+                showAlert('warning', 'Please select a tag to read');
+                return;
+            }
+
+            const tag = systemData.tags.find(t => t.id === selectedTagId);
+            if (tag) {
+                const result = document.getElementById('operationResult');
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Read Successful!</strong><br>
+                        Tag ID: ${tag.id}<br>
+                        Data: ${tag.data}<br>
+                        RSSI: ${tag.rssi} dBm<br>
+                        Type: ${tag.type === 'metal' ? 'Xerafy Dot XS (Metal)' : 'Avery Dennison AD-160u7 (Non-Metal)'}
+                    </div>
+                `;
+            }
+        }
+
+        // Write tag function
+        function writeTag() {
+            const selectedTagId = document.getElementById('selectedTag').value;
+            const writeData = document.getElementById('writeData').value;
+
+            if (!selectedTagId) {
+                showAlert('warning', 'Please select a tag to write to');
+                return;
+            }
+
+            if (!writeData) {
+                showAlert('warning', 'Please enter data to write');
+                return;
+            }
+
+            const tag = systemData.tags.find(t => t.id === selectedTagId);
+            if (tag) {
+                // Simulate write operation
+                tag.data = writeData;
+                tag.lastSeen = new Date();
+
+                updateInventoryTable();
+
+                const result = document.getElementById('operationResult');
+                result.innerHTML = `
+                    <div class="alert alert-success">
+                        <strong>Write Successful!</strong><br>
+                        Tag ID: ${tag.id}<br>
+                        New Data: ${writeData}<br>
+                        Write Range: ${tag.type === 'metal' ? '20-30m' : '25-35m'}
+                    </div>
+                `;
+
+                // Clear the input
+                document.getElementById('writeData').value = '';
+            }
+        }
+
+        @keyframes modernPulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+            50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .equipment-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .equipment-item:hover {
+            transform: scale(1.15) translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+        }
+
+        .equipment-safe {
+            background: var(--success-gradient);
+            box-shadow: 0 8px 32px rgba(17, 153, 142, 0.4);
+        }
+
+        .equipment-safe:hover {
+            box-shadow: 0 16px 48px rgba(17, 153, 142, 0.6);
+        }
+
+        .equipment-alert {
+            background: var(--warning-gradient);
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.4);
+            animation: modernAlertBlink 2s infinite;
+        }
+
+        .equipment-alert:hover {
+            box-shadow: 0 16px 48px rgba(240, 147, 251, 0.6);
+        }
+
+        .equipment-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4);
+            animation: modernDangerBlink 1.5s infinite;
+        }
+
+        .equipment-danger:hover {
+            box-shadow: 0 16px 48px rgba(255, 107, 107, 0.6);
+        }
+
+        @keyframes modernAlertBlink {
+            0%, 50% { opacity: 1; transform: scale(1); }
+            25%, 75% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        @keyframes modernDangerBlink {
+            0%, 50% { opacity: 1; transform: scale(1); }
+            25%, 75% { opacity: 0.5; transform: scale(1.08); }
+        }
+
+        .signal-wave {
+            position: absolute;
+            border: 2px solid #3498db;
+            border-radius: 50%;
+            opacity: 0;
+            animation: signalWave 2s infinite;
+        }
+
+        @keyframes signalWave {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                opacity: 0;
+            }
+        }
+
+        .status-panel {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 20px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .status-item:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+        }
+
+        .status-number {
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-label {
+            font-size: clamp(10px, 2vw, 12px);
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .moving-equipment {
+            animation: moveEquipment 8s infinite linear;
+        }
+
+        @keyframes moveEquipment {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(100px, -50px); }
+            50% { transform: translate(200px, 0); }
+            75% { transform: translate(100px, 50px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        /* Modern Workflow Simulation Styles */
+        .workflow-container {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 32px;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .workflow-panel {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .workflow-step {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius-sm);
+            padding: 20px;
+            border-left: 4px solid var(--info-gradient);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .workflow-step:hover::before {
+            opacity: 1;
+        }
+
+        .workflow-step.active {
+            background: rgba(240, 147, 251, 0.2);
+            border-left: 4px solid var(--warning-gradient);
+            transform: translateX(8px);
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+        }
+
+        .workflow-step.completed {
+            background: rgba(17, 153, 142, 0.2);
+            border-left: 4px solid var(--success-gradient);
+            box-shadow: 0 8px 32px rgba(17, 153, 142, 0.3);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: var(--info-gradient);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 16px;
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .step-number.active {
+            background: var(--warning-gradient);
+            animation: modernStepPulse 2s infinite;
+            box-shadow: 0 8px 24px rgba(240, 147, 251, 0.5);
+        }
+
+        .step-number.completed {
+            background: var(--success-gradient);
+            box-shadow: 0 4px 16px rgba(17, 153, 142, 0.4);
+        }
+
+        @keyframes modernStepPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(240, 147, 251, 0.5); }
+            50% { transform: scale(1.15); box-shadow: 0 12px 32px rgba(240, 147, 251, 0.7); }
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: clamp(14px, 2.5vw, 16px);
+            color: white;
+        }
+
+        .step-description {
+            font-size: clamp(11px, 2vw, 13px);
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+
+        .request-form {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .delivery-truck {
+            position: absolute;
+            width: 50px;
+            height: 30px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            z-index: 15;
+            opacity: 0;
+        }
+
+        .delivery-truck.moving {
+            animation: deliveryRoute 6s ease-in-out;
+        }
+
+        @keyframes deliveryRoute {
+            0% {
+                opacity: 1;
+                left: -60px;
+                top: 10%;
+            }
+            50% {
+                opacity: 1;
+                left: 50%;
+                top: 10%;
+            }
+            100% {
+                opacity: 1;
+                left: 50%;
+                top: 50%;
+            }
+        }
+
+        .new-equipment {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+            font-weight: bold;
+            opacity: 0;
+            transform: scale(0);
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border: 3px solid #f39c12;
+            animation: newItemAppear 2s ease-out;
+        }
+
+        @keyframes newItemAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        .tagging-process {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px dashed #f39c12;
+            border-radius: 50%;
+            opacity: 0;
+            animation: taggingAnimation 3s ease-in-out;
+        }
+
+        @keyframes taggingAnimation {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            25% {
+                opacity: 1;
+                transform: scale(1) rotate(90deg);
+            }
+            75% {
+                opacity: 1;
+                transform: scale(1.1) rotate(270deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1) rotate(360deg);
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #27ae60);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .notification-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 5px;
+            font-size: 11px;
+            border-left: 3px solid #3498db;
+        }
+
+        .notification-item.success {
+            border-left-color: #27ae60;
+        }
+
+        .notification-item.warning {
+            border-left-color: #f39c12;
+        }
+
+        .notification-item.error {
+            border-left-color: #e74c3c;
+        }
+
+        /* Responsive adjustments for workflow */
+        @media (max-width: 767px) {
+            .workflow-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .workflow-panel {
+                padding: 15px;
+            }
+            .delivery-truck {
+                width: 40px;
+                height: 25px;
+                font-size: 16px;
+            }
+            .new-equipment {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+
+        /* Responsive adjustments for scenario */
+        @media (max-width: 767px) {
+            .scenario-section {
+                padding: 15px;
+            }
+            .warehouse-container {
+                height: 300px;
+                padding: 15px;
+            }
+            .coverage-area {
+                width: 200px;
+                height: 200px;
+            }
+            .equipment-item {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            .rfid-reader {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <div class="header-content">
+                <h1>PROFESSIONAL WAREHOUSE RFID SYSTEM</h1>
+                <p>Complete System Architecture & Component Specifications</p>
+                <p>Single Reader Solution | 50m Coverage | Compute Module 4 PoE 4G Board</p>
+
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">50m</div>
+                        <div class="stat-label">Coverage Radius</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1</div>
+                        <div class="stat-label">RFID Reader</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">30+</div>
+                        <div class="stat-label">Equipment Tags</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Monitoring</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            <!-- Materials Section -->
+            <div class="materials-section">
+                <div class="section-title">🔧 System Components & Real Images</div>
+
+                <div class="materials-grid">
+                    <!-- Compute Module 4 PoE 4G Board -->
+                    <div class="material-card">
+                        <img src="https://www.waveshare.com/media/catalog/product/cache/1/image/560x560/9df78eab33525d08d6e5fb8d27136e95/c/o/compute-module-4-poe-4g-board-1.jpg"
+                             alt="CM4 PoE 4G Board" class="material-image">
+                        <div class="material-title">Compute Module 4 PoE 4G Board</div>
+                        <div class="material-model">Waveshare CM4-PoE-4G-Board</div>
+                        <div class="material-qty">QTY: 1</div>
+                        <div class="material-purpose">Integrated processing unit combining CM4 (4GB RAM, 32GB eMMC) with PoE power and 4G connectivity for complete system control</div>
+                        <div class="material-specs">• SIM7600G-H 4G module • PoE 802.3af/at • Ethernet Gigabit • GPS positioning • Industrial grade</div>
+                    </div>
+
+                    <!-- PoE Switch -->
+                    <div class="material-card">
+                        <img src="https://www.netgear.com/cid/fit/2048x1265/to/jpg/https/www.netgear.com/media/B3-gs308pp_32_tcm148-140435.png"
+                             alt="NETGEAR PoE Switch" class="material-image">
+                        <div class="material-title">NETGEAR PoE Switch</div>
+                        <div class="material-model">GS308PP-100NAS</div>
+                        <div class="material-qty">QTY: 1</div>
+                        <div class="material-purpose">Central network hub providing power and data connectivity to RFID reader and CM4 board</div>
+                        <div class="material-specs">• 8-port Gigabit Ethernet • 120W PoE+ budget • Fanless design • Auto-sensing PoE</div>
+                    </div>
+
+                    <!-- RFID Reader -->
+                    <div class="material-card">
+                        <img src="https://support.impinj.com/hc/article_attachments/360008274634/R420_Front_Angle.png"
+                             alt="Impinj R420 Reader" class="material-image">
+                        <div class="material-title">Impinj Speedway R420</div>
+                        <div class="material-model">IPJ-REV-R420-USA001M</div>
+                        <div class="material-qty">QTY: 1</div>
+                        <div class="material-purpose">High-performance UHF RFID reader with extended 50m range for complete warehouse coverage</div>
+                        <div class="material-specs">• 4 antenna ports • 902-928 MHz (US) • 50m read range • PoE powered • Advanced signal processing</div>
+                    </div>
+
+                    <!-- High-Gain Antennas -->
+                    <div class="material-card">
+                        <img src="https://www.lairdconnect.com/sites/default/files/2019-09/S9028PCL_0.jpg"
+                             alt="Laird Antenna" class="material-image">
+                        <div class="material-title">Laird High-Gain Antennas</div>
+                        <div class="material-model">S9028PCL</div>
+                        <div class="material-qty">QTY: 4</div>
+                        <div class="material-purpose">Circular polarized antennas with 12 dBi gain for extended 50m range coverage in industrial environment</div>
+                        <div class="material-specs">• 902-928 MHz frequency • 12 dBi gain • Circular polarization • IP67 weatherproof • 50m effective range</div>
+                    </div>
+
+                    <!-- Metal RFID Tags -->
+                    <div class="material-card">
+                        <img src="https://xerafy.com/wp-content/uploads/2019/05/Xerafy-Dot-XS-RFID-Tag.jpg"
+                             alt="Xerafy Metal Tags" class="material-image">
+                        <div class="material-title">Xerafy Metal RFID Tags</div>
+                        <div class="material-model">Xerafy Dot XS</div>
+                        <div class="material-qty">QTY: 20</div>
+                        <div class="material-purpose">Industrial-grade tags for metal equipment (tools, machinery) with strong adhesive mounting</div>
+                        <div class="material-specs">• UHF 860-960 MHz • Read range 0-50m • IP68 rated • Operating temp: -40°C to +85°C</div>
+                    </div>
+
+                    <!-- Non-Metal RFID Tags -->
+                    <div class="material-card">
+                        <img src="https://www.averydennison.com/-/media/averydennison/smartrac/images/products/inlays-tags/dogbone/ad-160u7.jpg"
+                             alt="Avery Dennison Tags" class="material-image">
+                        <div class="material-title">Avery Dennison Tags</div>
+                        <div class="material-model">AD-160u7</div>
+                        <div class="material-qty">QTY: 10</div>
+                        <div class="material-purpose">Standard UHF tags for non-metal equipment (pallets, containers) with excellent read performance</div>
+                        <div class="material-specs">• UHF 860-960 MHz • Read range 0-50m • Adhesive mounting • Flexible substrate</div>
+                    </div>
+
+                    <!-- CAT6 Cables -->
+                    <div class="material-card">
+                        <img src="https://m.media-amazon.com/images/I/61VnQyHdBuL._AC_SL1500_.jpg"
+                             alt="CAT6 Cable" class="material-image">
+                        <div class="material-title">Shielded CAT6 Cables</div>
+                        <div class="material-model">CAT6-SFTP-2M</div>
+                        <div class="material-qty">QTY: 2</div>
+                        <div class="material-purpose">High-quality Ethernet cables for PoE power delivery and data transmission (reduced quantity due to single reader)</div>
+                        <div class="material-specs">• Category 6 shielded • 2 meter length • RJ45 connectors • 1Gbps data rate</div>
+                    </div>
+
+                    <!-- Industrial Enclosure -->
+                    <div class="material-card">
+                        <img src="https://www.waveshare.com/media/catalog/product/cache/1/image/560x560/9df78eab33525d08d6e5fb8d27136e95/c/m/cm4-io-base-box-b-1.jpg"
+                             alt="Industrial Enclosure" class="material-image">
+                        <div class="material-title">Industrial Enclosure</div>
+                        <div class="material-model">CM4-IO-BASE-BOX-B</div>
+                        <div class="material-qty">QTY: 1</div>
+                        <div class="material-purpose">Industrial-grade protective enclosure for CM4 and 4G board against dust, moisture, and impacts</div>
+                        <div class="material-specs">• IP65 protection rating • Aluminum construction • Heat dissipation fins • Cable glands</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional System Architecture -->
+            <div class="diagram-section">
+                <div class="section-title">🏗️ Professional System Architecture</div>
+
+                <div class="architecture-container">
+                    <!-- Power Infrastructure -->
+                    <div class="architecture-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                            <div style="width: 60px; height: 60px; background: var(--warning-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 20px;">⚡</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--text-primary);">Power Infrastructure</h3>
+                                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: clamp(12px, 2vw, 16px);">AC Power Distribution</p>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                220V/110V AC Power Supply
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                Dedicated 15A circuit
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                Surge protection included
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                UPS compatible design
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                150W total consumption
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #38ef7d; font-weight: bold;">•</span>
+                                Industrial grade reliability
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Network Infrastructure -->
+                    <div class="architecture-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                            <div style="width: 60px; height: 60px; background: var(--info-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 20px;">🌐</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--text-primary);">Network Infrastructure</h3>
+                                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: clamp(12px, 2vw, 16px);">NETGEAR GS308PP PoE Switch</p>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                8-port Gigabit Ethernet
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                120W PoE+ budget
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                Auto-sensing PoE delivery
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                Fanless silent operation
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                Central network hub
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #4facfe; font-weight: bold;">•</span>
+                                Plug-and-play setup
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Processing & Connectivity -->
+                    <div class="architecture-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 20px;">🧠</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--text-primary);">Processing & Connectivity</h3>
+                                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: clamp(12px, 2vw, 16px);">CM4 PoE 4G Board (Waveshare)</p>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                4GB RAM / 32GB eMMC
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                SIM7600G-H 4G module
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                Real-time data processing
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                Web dashboard hosting
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                Alert management system
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #667eea; font-weight: bold;">•</span>
+                                GPS positioning capability
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- RFID Tracking System -->
+                    <div class="architecture-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 20px;">📡</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--text-primary);">RFID Tracking System</h3>
+                                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: clamp(12px, 2vw, 16px);">Impinj R420 + 4 High-Gain Antennas</p>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                Single reader solution
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                50m coverage radius
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                4 Laird S9028PCL antennas
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                12 dBi high gain
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                902-928 MHz (US frequency)
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #ff6b6b; font-weight: bold;">•</span>
+                                30+ simultaneous tags
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Cellular Connectivity -->
+                    <div class="architecture-card">
+                        <div style="display: flex; align-items: center; margin-bottom: 24px;">
+                            <div style="width: 60px; height: 60px; background: var(--success-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 20px;">📶</div>
+                            <div>
+                                <h3 style="margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 700; color: var(--text-primary);">Cellular Connectivity</h3>
+                                <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: clamp(12px, 2vw, 16px);">4G/LTE Remote Access</p>
+                            </div>
+                        </div>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                4G/LTE cellular connection
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                Remote dashboard access
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                SMS/Email alert system
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                10GB monthly data plan
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                External high-gain antenna
+                            </li>
+                            <li style="margin-bottom: 12px; padding-left: 20px; position: relative; font-size: clamp(12px, 2vw, 14px); color: var(--text-primary);">
+                                <span style="position: absolute; left: 0; color: #11998e; font-weight: bold;">•</span>
+                                Real-time monitoring
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- System Connections Flow -->
+                <div class="connections-section">
+                    <h3 class="connections-title">🔗 System Connection Flow</h3>
+                    <div class="connection-flow">
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">⚡</div>
+                            <strong>AC Power</strong><br>
+                            <small>220V/110V Supply</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">🌐</div>
+                            <strong>PoE Switch</strong><br>
+                            <small>Power + Data Hub</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">🧠</div>
+                            <strong>CM4 Board</strong><br>
+                            <small>Processing Unit</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">📶</div>
+                            <strong>4G Network</strong><br>
+                            <small>Remote Access</small>
+                        </div>
+                    </div>
+
+                    <div class="connection-flow" style="margin-top: 20px;">
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">🌐</div>
+                            <strong>PoE Switch</strong><br>
+                            <small>Network Hub</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">📡</div>
+                            <strong>RFID Reader</strong><br>
+                            <small>Impinj R420</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">📶</div>
+                            <strong>4 Antennas</strong><br>
+                            <small>50m Coverage</small>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-item">
+                            <div style="font-size: 20px; margin-bottom: 8px;">🏷️</div>
+                            <strong>RFID Tags</strong><br>
+                            <small>Equipment Tracking</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Performance Summary -->
+                <div class="connections-section">
+                    <h3 class="connections-title">📊 System Performance & Specifications</h3>
+                    <div class="architecture-row">
+                        <div class="system-component" style="border-left-color: #e74c3c;">
+                            <div class="component-header">
+                                <div class="component-icon" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">⚡</div>
+                                <div>
+                                    <h4 class="component-title">Power Requirements</h4>
+                                </div>
+                            </div>
+                            <ul class="component-specs">
+                                <li>150W total consumption</li>
+                                <li>15A dedicated circuit</li>
+                                <li>UPS compatible</li>
+                                <li>Surge protection</li>
+                            </ul>
+                        </div>
+
+                        <div class="system-component" style="border-left-color: #e67e22;">
+                            <div class="component-header">
+                                <div class="component-icon" style="background: linear-gradient(135deg, #e67e22, #d35400);">📡</div>
+                                <div>
+                                    <h4 class="component-title">RFID Performance</h4>
+                                </div>
+                            </div>
+                            <ul class="component-specs">
+                                <li>50m coverage radius</li>
+                                <li>2-5m location accuracy</li>
+                                <li>30+ simultaneous tags</li>
+                                <li>Real-time updates</li>
+                            </ul>
+                        </div>
+
+                        <div class="system-component" style="border-left-color: #27ae60;">
+                            <div class="component-header">
+                                <div class="component-icon" style="background: linear-gradient(135deg, #27ae60, #229954);">📶</div>
+                                <div>
+                                    <h4 class="component-title">Connectivity</h4>
+                                </div>
+                            </div>
+                            <ul class="component-specs">
+                                <li>4G/LTE cellular</li>
+                                <li>Remote dashboard</li>
+                                <li>SMS/Email alerts</li>
+                                <li>10GB data plan</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Hardware Integration Simulation -->
+                <div class="scenario-section">
+                    <div class="scenario-header">
+                        <h2 class="scenario-title">� Industrial Manufacturing Plant Asset Management</h2>
+                        <p class="scenario-subtitle">Complete Hardware Integration: CM4 PoE 4G Board → RFID System → Real-Time Asset Tracking</p>
+
+                        <div class="scenario-controls">
+                            <button class="control-btn" id="startWorkflowBtn" onclick="startCompleteWorkflow()">🚀 Start Plant Demo</button>
+                            <button class="control-btn" id="startTrackingBtn" onclick="startTrackingOnly()">📡 Live Monitoring</button>
+                            <button class="control-btn" id="hardwareBtn" onclick="showHardwareSetup()">🔧 Hardware View</button>
+                            <button class="control-btn" id="pauseBtn" onclick="pauseDemo()">⏸️ Pause</button>
+                            <button class="control-btn" id="resetBtn" onclick="resetDemo()">🔄 Reset</button>
+                            <button class="control-btn" id="alertBtn" onclick="triggerAlert()">🚨 Asset Alert</button>
+                        </div>
+                    </div>
+
+                    <!-- Complete Workflow Container -->
+                    <div class="workflow-container">
+                        <!-- Left Panel: Workflow Steps -->
+                        <div class="workflow-panel">
+                            <h3 style="margin-top: 0; margin-bottom: 15px;">📋 Manufacturing Asset Workflow</h3>
+
+                            <!-- Asset Request Form -->
+                            <div class="request-form" id="requestForm">
+                                <h4 style="margin: 0 0 10px 0;">📝 New Asset Request</h4>
+                                <div class="form-group">
+                                    <label class="form-label">Asset Type:</label>
+                                    <input type="text" class="form-input" id="equipmentType" placeholder="e.g., CNC Machine" value="CNC Machine">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quantity:</label>
+                                    <input type="number" class="form-input" id="quantity" placeholder="1" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Requested By:</label>
+                                    <input type="text" class="form-input" id="requestedBy" placeholder="Production Manager" value="Production Manager">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Department:</label>
+                                    <input type="text" class="form-input" id="department" placeholder="Manufacturing" value="Manufacturing">
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+
+                            <!-- Workflow Steps -->
+                            <div class="workflow-steps">
+                                <div class="workflow-step" id="step1">
+                                    <span class="step-number" id="stepNum1">1</span>
+                                    <div>
+                                        <div class="step-title">Asset Request Submitted</div>
+                                        <div class="step-description">Production manager submits new asset request</div>
+                                    </div>
+                                </div>
+
+                                <div class="workflow-step" id="step2">
+                                    <span class="step-number" id="stepNum2">2</span>
+                                    <div>
+                                        <div class="step-title">Hardware System Setup</div>
+                                        <div class="step-description">CM4 PoE 4G Board and RFID reader configured</div>
+                                    </div>
+                                </div>
+
+                                <div class="workflow-step" id="step3">
+                                    <span class="step-number" id="stepNum3">3</span>
+                                    <div>
+                                        <div class="step-title">Asset Delivered to Plant</div>
+                                        <div class="step-description">Manufacturing equipment arrives at facility</div>
+                                    </div>
+                                </div>
+
+                                <div class="workflow-step" id="step4">
+                                    <span class="step-number" id="stepNum4">4</span>
+                                    <div>
+                                        <div class="step-title">RFID Tag Integration</div>
+                                        <div class="step-description">Industrial RFID tags applied to asset</div>
+                                    </div>
+                                </div>
+
+                                <div class="workflow-step" id="step5">
+                                    <span class="step-number" id="stepNum5">5</span>
+                                    <div>
+                                        <div class="step-title">System Registration</div>
+                                        <div class="step-description">Asset registered in manufacturing database</div>
+                                    </div>
+                                </div>
+
+                                <div class="workflow-step" id="step6">
+                                    <span class="step-number" id="stepNum6">6</span>
+                                    <div>
+                                        <div class="step-title">Live Asset Monitoring</div>
+                                        <div class="step-description">24/7 tracking via 4G connectivity active</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notification Panel -->
+                            <div class="notification-panel" id="notificationPanel">
+                                <div class="notification-item">
+                                    <strong>System Ready:</strong> Waiting for workflow to start...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Visual Simulation -->
+                        <div class="workflow-panel">
+                            <h3 style="margin-top: 0; margin-bottom: 15px;">🏭 Manufacturing Plant Visualization</h3>
+
+                            <!-- Manufacturing Plant Simulation -->
+                            <div class="warehouse-container" id="warehouseContainer">
+                                <div class="warehouse-grid"></div>
+
+                                <!-- Hardware Components -->
+                                <!-- CM4 PoE 4G Board (Control Center) -->
+                                <div class="equipment-item equipment-safe" id="cm4Board" style="top: 5%; left: 5%; background: linear-gradient(135deg, #9b59b6, #8e44ad);" title="CM4 PoE 4G Board - Control Center">🧠</div>
+
+                                <!-- PoE Switch -->
+                                <div class="equipment-item equipment-safe" id="poeSwitch" style="top: 5%; left: 20%; background: linear-gradient(135deg, #3498db, #2980b9);" title="NETGEAR PoE Switch - Network Hub">🌐</div>
+
+                                <!-- Industrial Enclosure -->
+                                <div class="equipment-item equipment-safe" id="enclosure" style="top: 5%; left: 35%; background: linear-gradient(135deg, #95a5a6, #7f8c8d);" title="Industrial Enclosure - Protection">🏠</div>
+
+                                <!-- Delivery Truck (will appear during delivery) -->
+                                <div class="delivery-truck" id="deliveryTruck">🚚</div>
+
+                                <!-- RFID Reader (Center) -->
+                                <div class="rfid-reader" id="rfidReader" title="Impinj R420 RFID Reader">📡</div>
+
+                                <!-- High-Gain Antennas (4 corners) -->
+                                <div class="equipment-item equipment-safe" id="antenna1" style="top: 15%; left: 85%; background: linear-gradient(135deg, #e67e22, #d35400);" title="Laird High-Gain Antenna 1">📶</div>
+                                <div class="equipment-item equipment-safe" id="antenna2" style="top: 85%; left: 85%; background: linear-gradient(135deg, #e67e22, #d35400);" title="Laird High-Gain Antenna 2">📶</div>
+                                <div class="equipment-item equipment-safe" id="antenna3" style="top: 85%; left: 15%; background: linear-gradient(135deg, #e67e22, #d35400);" title="Laird High-Gain Antenna 3">📶</div>
+                                <div class="equipment-item equipment-safe" id="antenna4" style="top: 15%; left: 15%; background: linear-gradient(135deg, #e67e22, #d35400);" title="Laird High-Gain Antenna 4">📶</div>
+
+                                <!-- Coverage Area -->
+                                <div class="coverage-area" id="coverageArea"></div>
+
+                                <!-- Tagging Process Animation (will appear during tagging) -->
+                                <div class="tagging-process" id="taggingProcess" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+
+                                <!-- Manufacturing Assets -->
+                                <div class="equipment-item equipment-safe" id="cncMachine" style="top: 25%; left: 25%;" title="CNC Machine - Safe Zone">⚙️</div>
+                                <div class="equipment-item equipment-safe" id="roboticArm" style="top: 35%; left: 65%;" title="Robotic Arm - Safe Zone">🦾</div>
+                                <div class="equipment-item equipment-alert" id="conveyor" style="top: 65%; left: 35%;" title="Conveyor Belt - Alert Zone">�</div>
+                                <div class="equipment-item equipment-safe" id="lathe" style="top: 55%; left: 70%;" title="Industrial Lathe - Safe Zone">�</div>
+                                <div class="equipment-item equipment-danger" id="missing" style="top: 10%; left: 90%;" title="Missing Asset - Out of Range">❌</div>
+                                <div class="equipment-item equipment-safe moving-equipment" id="agv" style="top: 75%; left: 15%;" title="Automated Guided Vehicle - Moving">🤖</div>
+
+                                <!-- New Asset (will appear after delivery) -->
+                                <div class="new-equipment" id="newEquipment" style="top: 50%; left: 50%; display: none;" title="New CNC Machine">⚙️</div>
+
+                                <!-- Signal Waves (will be added dynamically) -->
+                                <div class="signal-wave" id="signalWave1" style="top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-time Status Panel -->
+                    <div class="status-panel">
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <div class="status-number" id="totalEquipment" style="color: #3498db;">6</div>
+                                <div class="status-label">Total Equipment</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-number" id="safeEquipment" style="color: #27ae60;">4</div>
+                                <div class="status-label">Safe Zone</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-number" id="alertEquipment" style="color: #f39c12;">1</div>
+                                <div class="status-label">Alert Zone</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-number" id="missingEquipment" style="color: #e74c3c;">1</div>
+                                <div class="status-label">Out of Range</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-number" id="systemStatus" style="color: #27ae60;">ONLINE</div>
+                                <div class="status-label">System Status</div>
+                            </div>
+                            <div class="status-item">
+                                <div class="status-number" id="lastUpdate" style="color: #3498db;">LIVE</div>
+                                <div class="status-label">Last Update</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let demoRunning = false;
+        let workflowRunning = false;
+        let currentStep = 0;
+        let demoInterval;
+        let signalInterval;
+        let updateInterval;
+        let workflowInterval;
+
+        // Complete Workflow Simulation
+        function startCompleteWorkflow() {
+            if (workflowRunning) return;
+
+            resetDemo();
+            workflowRunning = true;
+            currentStep = 0;
+
+            document.getElementById('startWorkflowBtn').classList.add('active');
+            document.getElementById('startWorkflowBtn').innerHTML = '⏹️ Stop Workflow';
+
+            addNotification('🚀 Starting complete workflow simulation...', 'success');
+
+            // Start the workflow steps
+            executeWorkflowStep(1);
+        }
+
+        function executeWorkflowStep(step) {
+            if (!workflowRunning) return;
+
+            currentStep = step;
+            updateProgress((step / 6) * 100);
+
+            // Mark current step as active
+            for (let i = 1; i <= 6; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                const stepNumEl = document.getElementById(`stepNum${i}`);
+
+                if (i < step) {
+                    stepEl.className = 'workflow-step completed';
+                    stepNumEl.className = 'step-number completed';
+                } else if (i === step) {
+                    stepEl.className = 'workflow-step active';
+                    stepNumEl.className = 'step-number active';
+                } else {
+                    stepEl.className = 'workflow-step';
+                    stepNumEl.className = 'step-number';
+                }
+            }
+
+            switch(step) {
+                case 1:
+                    addNotification('📝 Material request submitted by ' + document.getElementById('requestedBy').value, 'success');
+                    setTimeout(() => executeWorkflowStep(2), 2000);
+                    break;
+
+                case 2:
+                    addNotification('✅ Request approved by manager and order placed', 'success');
+                    setTimeout(() => executeWorkflowStep(3), 2500);
+                    break;
+
+                case 3:
+                    addNotification('🚚 Equipment delivery in progress...', 'warning');
+                    startDeliveryAnimation();
+                    setTimeout(() => executeWorkflowStep(4), 6000);
+                    break;
+
+                case 4:
+                    addNotification('🏷️ Applying RFID tag to new equipment...', 'warning');
+                    startTaggingProcess();
+                    setTimeout(() => executeWorkflowStep(5), 4000);
+                    break;
+
+                case 5:
+                    addNotification('💾 Registering equipment in tracking database...', 'warning');
+                    registerNewEquipment();
+                    setTimeout(() => executeWorkflowStep(6), 3000);
+                    break;
+
+                case 6:
+                    addNotification('📡 Real-time tracking activated! Equipment now monitored 24/7', 'success');
+                    startTrackingSystem();
+                    break;
+            }
+        }
+
+        function startDeliveryAnimation() {
+            const truck = document.getElementById('deliveryTruck');
+            truck.classList.add('moving');
+
+            setTimeout(() => {
+                truck.classList.remove('moving');
+                addNotification('📦 Equipment delivered to warehouse', 'success');
+            }, 6000);
+        }
+
+        function startTaggingProcess() {
+            const taggingEl = document.getElementById('taggingProcess');
+            const newEquipEl = document.getElementById('newEquipment');
+
+            // Show new equipment
+            newEquipEl.style.display = 'flex';
+            newEquipEl.style.opacity = '1';
+
+            // Start tagging animation
+            taggingEl.style.opacity = '1';
+            taggingEl.style.animation = 'taggingAnimation 3s ease-in-out';
+
+            setTimeout(() => {
+                taggingEl.style.opacity = '0';
+                addNotification('🏷️ RFID tag successfully applied', 'success');
+            }, 3000);
+        }
+
+        function registerNewEquipment() {
+            const equipmentType = document.getElementById('equipmentType').value;
+            addNotification(`💾 ${equipmentType} registered with ID: EQ-${Date.now().toString().slice(-4)}`, 'success');
+
+            // Update status counters
+            const totalEl = document.getElementById('totalEquipment');
+            const safeEl = document.getElementById('safeEquipment');
+
+            totalEl.textContent = parseInt(totalEl.textContent) + 1;
+            safeEl.textContent = parseInt(safeEl.textContent) + 1;
+        }
+
+        function startTrackingSystem() {
+            // Convert new equipment to tracked equipment
+            const newEquipEl = document.getElementById('newEquipment');
+            newEquipEl.className = 'equipment-item equipment-safe';
+            newEquipEl.style.border = '2px solid #27ae60';
+
+            // Start tracking demo
+            startTrackingOnly();
+
+            addNotification('✅ Workflow complete! Equipment is now being tracked in real-time.', 'success');
+        }
+
+        function startTrackingOnly() {
+            if (demoRunning) return;
+
+            demoRunning = true;
+            document.getElementById('startTrackingBtn').classList.add('active');
+            document.getElementById('startTrackingBtn').innerHTML = '⏹️ Stop Tracking';
+
+            // Start signal waves
+            signalInterval = setInterval(createSignalWave, 1000);
+
+            // Start status updates
+            updateInterval = setInterval(updateStatus, 2000);
+
+            // Add movement to equipment
+            document.getElementById('forklift').style.animation = 'moveEquipment 8s infinite linear';
+
+            // Simulate real-time updates
+            simulateRealTimeUpdates();
+
+            addNotification('📡 Real-time tracking system activated', 'success');
+        }
+
+        function pauseDemo() {
+            demoRunning = false;
+            workflowRunning = false;
+
+            document.getElementById('startWorkflowBtn').classList.remove('active');
+            document.getElementById('startWorkflowBtn').innerHTML = '🚀 Start Complete Workflow';
+            document.getElementById('startTrackingBtn').classList.remove('active');
+            document.getElementById('startTrackingBtn').innerHTML = '📡 Tracking Only';
+
+            clearInterval(signalInterval);
+            clearInterval(updateInterval);
+            clearInterval(demoInterval);
+            clearInterval(workflowInterval);
+
+            addNotification('⏸️ Simulation paused', 'warning');
+        }
+
+        function resetDemo() {
+            pauseDemo();
+
+            // Reset workflow steps
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById(`step${i}`).className = 'workflow-step';
+                document.getElementById(`stepNum${i}`).className = 'step-number';
+            }
+
+            // Reset progress bar
+            updateProgress(0);
+
+            // Reset all equipment to original positions and states
+            document.getElementById('drill').className = 'equipment-item equipment-safe';
+            document.getElementById('hammer').className = 'equipment-item equipment-safe';
+            document.getElementById('pallet').className = 'equipment-item equipment-alert';
+            document.getElementById('wrench').className = 'equipment-item equipment-safe';
+            document.getElementById('missing').className = 'equipment-item equipment-danger';
+            document.getElementById('forklift').className = 'equipment-item equipment-safe moving-equipment';
+            document.getElementById('forklift').style.animation = 'none';
+
+            // Hide new equipment
+            document.getElementById('newEquipment').style.display = 'none';
+            document.getElementById('newEquipment').style.opacity = '0';
+
+            // Reset delivery truck
+            document.getElementById('deliveryTruck').classList.remove('moving');
+
+            // Reset tagging process
+            document.getElementById('taggingProcess').style.opacity = '0';
+
+            // Reset status
+            document.getElementById('totalEquipment').textContent = '6';
+            document.getElementById('safeEquipment').textContent = '4';
+            document.getElementById('alertEquipment').textContent = '1';
+            document.getElementById('missingEquipment').textContent = '1';
+            document.getElementById('systemStatus').textContent = 'ONLINE';
+            document.getElementById('systemStatus').style.color = '#27ae60';
+
+            // Clear signal waves
+            const waves = document.querySelectorAll('.signal-wave');
+            waves.forEach(wave => {
+                wave.style.animation = 'none';
+            });
+
+            // Clear notifications
+            clearNotifications();
+            addNotification('🔄 System reset complete', 'success');
+        }
+
+        function updateProgress(percentage) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+        }
+
+        function addNotification(message, type) {
+            const panel = document.getElementById('notificationPanel');
+            const notification = document.createElement('div');
+            notification.className = `notification-item ${type}`;
+            notification.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+
+            // Add to top of panel
+            panel.insertBefore(notification, panel.firstChild);
+
+            // Keep only last 5 notifications
+            while (panel.children.length > 5) {
+                panel.removeChild(panel.lastChild);
+            }
+
+            // Scroll to top
+            panel.scrollTop = 0;
+        }
+
+        function clearNotifications() {
+            const panel = document.getElementById('notificationPanel');
+            panel.innerHTML = '<div class="notification-item"><strong>System Ready:</strong> Waiting for workflow to start...</div>';
+        }
+
+        function triggerAlert() {
+            // Simulate equipment going out of range
+            const drill = document.getElementById('drill');
+            drill.className = 'equipment-item equipment-danger';
+
+            // Update status
+            document.getElementById('safeEquipment').textContent = '3';
+            document.getElementById('missingEquipment').textContent = '2';
+            document.getElementById('systemStatus').textContent = 'ALERT';
+            document.getElementById('systemStatus').style.color = '#e74c3c';
+
+            // Show alert notification
+            showNotification('🚨 ALERT: Drill Set has moved out of range!', 'danger');
+
+            // Reset after 3 seconds
+            setTimeout(() => {
+                drill.className = 'equipment-item equipment-safe';
+                document.getElementById('safeEquipment').textContent = '4';
+                document.getElementById('missingEquipment').textContent = '1';
+                document.getElementById('systemStatus').textContent = 'ONLINE';
+                document.getElementById('systemStatus').style.color = '#27ae60';
+                showNotification('✅ Equipment back in safe zone', 'success');
+            }, 3000);
+        }
+
+        function createSignalWave() {
+            const reader = document.getElementById('rfidReader');
+            const wave = document.createElement('div');
+            wave.className = 'signal-wave';
+            wave.style.position = 'absolute';
+            wave.style.top = '50%';
+            wave.style.left = '50%';
+            wave.style.transform = 'translate(-50%, -50%)';
+            wave.style.border = '2px solid #3498db';
+            wave.style.borderRadius = '50%';
+            wave.style.animation = 'signalWave 2s ease-out';
+
+            document.getElementById('warehouseContainer').appendChild(wave);
+
+            // Remove wave after animation
+            setTimeout(() => {
+                if (wave.parentNode) {
+                    wave.parentNode.removeChild(wave);
+                }
+            }, 2000);
+        }
+
+        function updateStatus() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('lastUpdate').textContent = timeString;
+        }
+
+        function simulateRealTimeUpdates() {
+            demoInterval = setInterval(() => {
+                // Randomly change equipment status to simulate real tracking
+                const equipment = ['drill', 'hammer', 'wrench'];
+                const randomEquip = equipment[Math.floor(Math.random() * equipment.length)];
+                const element = document.getElementById(randomEquip);
+
+                // Temporarily change to alert state
+                const originalClass = element.className;
+                element.className = 'equipment-item equipment-alert';
+
+                // Change back after 1 second
+                setTimeout(() => {
+                    element.className = originalClass;
+                }, 1000);
+
+            }, 5000);
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'danger' ? '#e74c3c' : '#27ae60'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                z-index: 1000;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Add CSS for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Auto-start demo when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showNotification('🎬 Complete workflow simulation ready! Choose "Start Complete Workflow" for full demo.', 'success');
+                addNotification('🚀 System initialized and ready for demonstration', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
